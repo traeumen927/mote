@@ -11,11 +11,9 @@ import SnapKit
 final class LoginViewController: UIViewController {
     
     private let viewModel: LoginViewModel
-    private let signInWithGoogleUseCase: SignInWithGoogleUseCase
     
-    init(viewModel: LoginViewModel, signInWithGoogleUseCase: SignInWithGoogleUseCase) {
+    init(viewModel: LoginViewModel) {
         self.viewModel = viewModel
-        self.signInWithGoogleUseCase = signInWithGoogleUseCase
         super.init(nibName: nil, bundle: nil)
     }
     

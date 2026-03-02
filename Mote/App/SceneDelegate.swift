@@ -6,29 +6,23 @@
 //
 
 import UIKit
-import FirebaseAuth
 import GoogleSignIn
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     var window: UIWindow?
     
+    private var appCoordinator: AppCoordinator?
+    
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         let window = UIWindow(windowScene: windowScene)
-        
-        let googleAuthService = GoogleAuthService()
-        let viewModel = LoginViewModel()
-        let signInWithGoogleUseCase = SignInWithGoogleUseCase(googleAuthService: googleAuthService)
-        let viewController = LoginViewController(
-            viewModel: viewModel,
-            signInWithGoogleUseCase: signInWithGoogleUseCase
-        )
-        
-        window.rootViewController = viewController
         self.window = window
-        window.makeKeyAndVisible()
         
+        let appCoordinator = AppCoordinator(window: window)
+        self.appCoordinator = appCoordinator
+        
+        appCoordinator.start()
     }
     
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {

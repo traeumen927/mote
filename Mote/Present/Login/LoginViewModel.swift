@@ -8,5 +8,9 @@
 import Foundation
 
 final class LoginViewModel {
-    
+    private let signInWithGoogleUseCase: SignInWithGoogleUseCase
+
+    init(signInWithGoogleUseCase: SignInWithGoogleUseCase) {
+        self.signInWithGoogleUseCase = signInWithGoogleUseCase
+    }
 }
