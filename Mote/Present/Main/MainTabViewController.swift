@@ -26,14 +26,17 @@ final class MainTabViewController: UITabBarController {
     }
     
     private func setupTabs() {
+        
+        self.tabBar.tintColor = SemanticColor.iconTab.uiColor
+        
         let todayViewController = TodayViewController(viewModel: viewModel.todayViewModel)
-        todayViewController.tabBarItem = UITabBarItem(title: "Today", image: UIImage(systemName: "sun.max"), selectedImage: UIImage(systemName: "sun.max.fill"))
+        todayViewController.tabBarItem = UITabBarItem(title: nil, image: UIImage(systemName: "face.smiling"), selectedImage: UIImage(systemName: "face.smiling"))
         
         let driftViewController = DriftViewController(viewModel: viewModel.driftViewModel)
-        driftViewController.tabBarItem = UITabBarItem(title: "Drift", image: UIImage(systemName: "wind"), selectedImage: UIImage(systemName: "wind"))
+        driftViewController.tabBarItem = UITabBarItem(title: nil, image: UIImage(systemName: "circle.dotted"), selectedImage: UIImage(systemName: "circle.dotted"))
         
         let spaceViewController = SpaceViewController(viewModel: viewModel.spaceViewModel)
-        spaceViewController.tabBarItem = UITabBarItem(title: "Space", image: UIImage(systemName: "sparkles"), selectedImage: UIImage(systemName: "sparkles"))
+        spaceViewController.tabBarItem = UITabBarItem(title: nil, image: UIImage(systemName: "square.grid.2x2"), selectedImage: UIImage(systemName: "square.grid.2x2"))
         
         self.setViewControllers([
             UINavigationController(rootViewController: todayViewController),

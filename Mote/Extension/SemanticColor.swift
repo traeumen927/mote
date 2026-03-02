@@ -36,6 +36,7 @@ enum SemanticColor {
     case iconTertiary
     case iconOnAccent
     case iconDestructive
+    case iconTab
 
     // MARK: - Border
     case borderDefault
@@ -136,6 +137,9 @@ extension SemanticColor {
 
         case .iconDestructive:
             return .palette(.SR40)
+            
+        case .iconTab:
+            return .palette(.SS40)
 
 
         // MARK: - Border

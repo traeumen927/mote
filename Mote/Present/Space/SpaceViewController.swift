@@ -36,7 +36,6 @@ final class SpaceViewController: UIViewController {
     
     private func setupLayout() {
         self.view.backgroundColor = SemanticColor.bgApp.uiColor
-        self.title = "Space"
         self.view.addSubview(self.logoutButton)
         
         self.logoutButton.snp.makeConstraints { make in
