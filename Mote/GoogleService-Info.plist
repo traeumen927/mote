@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>968486724289-e556l5vvi71tpepq2j602pj50trn42r1.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.968486724289-e556l5vvi71tpepq2j602pj50trn42r1</string>
+	<key>API_KEY</key>
+	<string>AIzaSyAbhIRJAZNupBv_rxLgHEDCg923ffnICmE</string>
+	<key>GCM_SENDER_ID</key>
+	<string>968486724289</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.jeongyeon.Mote</string>
+	<key>PROJECT_ID</key>
+	<string>mote-8724d</string>
+	<key>STORAGE_BUCKET</key>
+	<string>mote-8724d.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:968486724289:ios:605191d582453330766a40</string>
+</dict>
+</plist>
