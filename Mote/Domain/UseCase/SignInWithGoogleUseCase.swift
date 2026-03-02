@@ -16,7 +16,7 @@ final class SignInWithGoogleUseCase {
     }
     
     @MainActor
-    func execute(presentingViewController: UIViewController, completion: @escaping (Result<User, Error>) -> Void) {
-        googleAuthService.signIn(presentingViewController: presentingViewController, completion: completion)
+    func execute(completion: @escaping (Result<User, Error>) -> Void) {
+            self.googleAuthService.signIn(completion: completion)
     }
 }
