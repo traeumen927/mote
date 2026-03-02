@@ -20,6 +20,7 @@ final class AppCoordinator {
     private weak var window: UIWindow?
     private let googleSignInPresenterStore: GoogleSignInPresenterStoreType
     private let googleAuthService: GoogleAuthServicing
+    private let authRepository: AuthRepository
     private var authStateListenerHandle: AuthStateDidChangeListenerHandle?
     private var currentRootFlow: RootFlow?
     
@@ -30,7 +31,9 @@ final class AppCoordinator {
     ) {
         self.window = window
         self.googleSignInPresenterStore = googleSignInPresenterStore
-        self.googleAuthService = googleAuthService ?? GoogleAuthService(presenterStore: googleSignInPresenterStore)
+        let googleAuthService = googleAuthService ?? GoogleAuthService(presenterStore: googleSignInPresenterStore)
+        self.googleAuthService = googleAuthService
+        self.authRepository = AuthRepositoryImpl(googleAuthService: googleAuthService)
     }
     
     deinit {
@@ -53,7 +56,7 @@ final class AppCoordinator {
     
     // MARK: Auth Listener 실행
     private func startAuthStateListening() {
-        self.authStateListenerHandle = self.googleAuthService.addAuthStateListener { [weak self] user in
+        self.authStateListenerHandle = self.authRepository.addAuthStateListener { [weak self] user in
             self?.setRootViewController(isAuthenticated: user != nil)
         }
     }
@@ -61,7 +64,7 @@ final class AppCoordinator {
     // MARK: Auth Listener 제거
     private func stopAuthStateListening() {
         guard let authStateListenerHandle else { return }
-        self.googleAuthService.removeAuthStateListener(authStateListenerHandle)
+        self.authRepository.removeAuthStateListener(authStateListenerHandle)
         self.authStateListenerHandle = nil
     }
     
@@ -80,7 +83,7 @@ final class AppCoordinator {
     }
     
     private func makeLoginViewController() -> UIViewController {
-        let signInWithGoogleUseCase = SignInWithGoogleUseCase(googleAuthService: self.googleAuthService)
+        let signInWithGoogleUseCase = SignInWithGoogleUseCase(authRepository: self.authRepository)
         let viewModel = LoginViewModel(signInWithGoogleUseCase: signInWithGoogleUseCase)
         return LoginViewController(viewModel: viewModel, presenterStore: self.googleSignInPresenterStore)
     }
@@ -90,6 +93,8 @@ final class AppCoordinator {
     }
     
     private func makeMainViewController() -> UIViewController {
-        MainTabViewController()
+        let signOutUseCase = SignOutUseCase(authRepository: self.authRepository)
+        let viewModel = MainTabViewModel(signOutUseCase: signOutUseCase)
+        return MainTabViewController(viewModel: viewModel)
     }
 }

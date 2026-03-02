@@ -9,14 +9,14 @@ import UIKit
 import FirebaseAuth
 
 final class SignInWithGoogleUseCase {
-    private let googleAuthService: GoogleAuthServicing
+    private let authRepository: AuthRepository
     
-    init(googleAuthService: GoogleAuthServicing) {
-        self.googleAuthService = googleAuthService
+    init(authRepository: AuthRepository) {
+        self.authRepository = authRepository
     }
     
     @MainActor
     func execute(completion: @escaping (Result<User, Error>) -> Void) {
-            self.googleAuthService.signIn(completion: completion)
+        self.authRepository.signInWithGoogle(completion: completion)
     }
 }
