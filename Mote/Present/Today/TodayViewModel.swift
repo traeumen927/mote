@@ -6,56 +6,68 @@
 //
 
 import Foundation
+import RxSwift
+import RxCocoa
 
 final class TodayViewModel {
-    struct TodayEmotionRecord {
-            let emotion: String
-            let caption: String?
-            let savedAt: Date
-        }
+    let items = EmotionItem.allCases
+    
+    let isLoading = BehaviorRelay<Bool>(value: false)
+    let saveSucceeded = PublishRelay<SaveTodayEmotionUseCase.ResultData>()
+    let saveFailed = PublishRelay<Error>()
+    
+    private let canSaveRelay = BehaviorRelay<Bool>(value: false)
+    var canSave: Driver<Bool> {
+        self.canSaveRelay.asDriver()
+    }
+    
+    private var selectedIndex: Int?
+    private var caption: String?
+    
+    private let saveTodayEmotionUseCase: SaveTodayEmotionUseCase
+    
+    init(saveTodayEmotionUseCase: SaveTodayEmotionUseCase) {
+        self.saveTodayEmotionUseCase = saveTodayEmotionUseCase
+    }
+    
+    func selectEmotion(at index: Int) {
+        self.selectedIndex = index
+        self.syncCanSave()
+    }
+    
+    func updateCaption(_ caption: String?) {
+        self.caption = caption
+    }
+    
+    func saveTodayEmotion() {
+        guard let selectedIndex else { return }
+        guard self.isLoading.value == false else { return }
         
-        let items: [String] = [
-            "😎 Proud",
-            "🥹 Touched",
-            "🤬 Furious",
-            "😝 Excited",
-            "🥰 Happy",
-            "🙂 Okay",
-            "😐 Meh",
-            "☹️ Displeased",
-            "😭 Sad"
-        ]
+        self.isLoading.accept(true)
+        self.syncCanSave()
         
-        private let userDefaults: UserDefaults
-        private let calendar: Calendar
-        private let savedDateKey = "today_emotion_saved_date"
-        
-        init(userDefaults: UserDefaults = .standard, calendar: Calendar = .current) {
-            self.userDefaults = userDefaults
-            self.calendar = calendar
-        }
-        
-        func canSaveToday() -> Bool {
-            guard let savedDate = self.userDefaults.object(forKey: self.savedDateKey) as? Date else {
-                return true
-            }
-            return !self.calendar.isDateInToday(savedDate)
-        }
-        
-        @discardableResult
-        func saveTodayEmotion(selectedIndex: Int, caption: String?) -> TodayEmotionRecord? {
-            guard self.canSaveToday(), self.items.indices.contains(selectedIndex) else {
-                return nil
-            }
+        self.saveTodayEmotionUseCase.execute(
+            emotions: self.items,
+            selectedIndex: selectedIndex,
+            caption: self.caption
+        ) { [weak self] result in
+            guard let self else { return }
             
-            let normalizedCaption = caption?.trimmingCharacters(in: .whitespacesAndNewlines)
-            let record = TodayEmotionRecord(
-                emotion: self.items[selectedIndex],
-                caption: normalizedCaption?.isEmpty == true ? nil : normalizedCaption,
-                savedAt: Date()
-            )
-            
-            self.userDefaults.set(record.savedAt, forKey: self.savedDateKey)
-            return record
+            DispatchQueue.main.async {
+                self.isLoading.accept(false)
+                self.syncCanSave()
+                
+                switch result {
+                case .success(let data):
+                    self.saveSucceeded.accept(data)
+                case .failure(let error):
+                    self.saveFailed.accept(error)
+                }
+            }
         }
+    }
+    
+    private func syncCanSave() {
+        self.canSaveRelay.accept(self.selectedIndex != nil && self.isLoading.value == false)
+    }
 }

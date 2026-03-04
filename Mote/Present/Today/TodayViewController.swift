@@ -16,9 +16,6 @@ final class TodayViewController: UIViewController {
     
     private let disposeBag = DisposeBag()
     
-    // MARK: 선택 Index
-    private var selectedIndexPath: IndexPath?
-    
     // MARK: 동적으로 변동되는 CollectionView 높이
     private var emotionContainerHeightConstraint: Constraint?
     
@@ -154,14 +151,14 @@ final class TodayViewController: UIViewController {
         // MARK: Right BarButton으로 저장
         self.saveBarButtonItem.rx.tap
             .bind { [weak self] in
-                self?.saveSelectedEmotion()
+                self?.viewModel.saveTodayEmotion()
             }
             .disposed(by: self.disposeBag)
         
         // MARK: ReturnKey로 저장
-        captionTextField.rx.controlEvent(.editingDidEndOnExit)
+        self.captionTextField.rx.controlEvent(.editingDidEndOnExit)
             .bind { [weak self] in
-                self?.saveSelectedEmotion()
+                self?.viewModel.saveTodayEmotion()
             }
             .disposed(by: disposeBag)
         
@@ -169,17 +166,37 @@ final class TodayViewController: UIViewController {
         self.collectionView.rx.itemSelected
             .bind { [weak self] indexPath in
                 guard let self else { return }
-                self.selectedIndexPath = indexPath
-                self.saveBarButtonItem.isEnabled = true
                 self.captionContainerView.isHidden = false
+                self.viewModel.selectEmotion(at: indexPath.item)
             }
             .disposed(by: self.disposeBag)
-    }
-    
-    private func saveSelectedEmotion() {
-        guard let indexPath = self.selectedIndexPath else { return }
         
-        guard let record = self.viewModel.saveTodayEmotion(selectedIndex: indexPath.item, caption: self.captionTextField.text) else { return }
+        self.captionTextField.rx.text
+            .bind { [weak self] text in
+                self?.viewModel.updateCaption(text)
+            }
+            .disposed(by: self.disposeBag)
+        
+        self.viewModel.canSave
+            .drive(self.saveBarButtonItem.rx.isEnabled)
+            .disposed(by: self.disposeBag)
+        
+        self.viewModel.isLoading
+            .map { !$0 }
+            .bind(to: self.collectionView.rx.isUserInteractionEnabled)
+            .disposed(by: self.disposeBag)
+        
+        self.viewModel.saveSucceeded
+            .bind { data in
+                print("✅ Saved emotion: \(data.emotion), dateKey: \(data.dateKey)")
+            }
+            .disposed(by: self.disposeBag)
+        
+        self.viewModel.saveFailed
+            .bind { error in
+                print("❌ Failed to save emotion: \(error.localizedDescription)")
+            }
+            .disposed(by: self.disposeBag)
     }
     
     private func updateEmotionContainerHeightIfNeeded() {
@@ -204,7 +221,7 @@ extension TodayViewController: UICollectionViewDataSource {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TodayEmotionCell.cellId, for: indexPath) as? TodayEmotionCell else {
             return UICollectionViewCell()
         }
-        cell.configure(text: self.viewModel.items[indexPath.item])
+        cell.configure(text: self.viewModel.items[indexPath.item].displayText)
         return cell
     }
 }

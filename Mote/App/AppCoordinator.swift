@@ -7,6 +7,8 @@
 
 import UIKit
 import FirebaseAuth
+import FirebaseCore
+import FirebaseFirestore
 
 final class AppCoordinator {
     
@@ -94,7 +96,10 @@ final class AppCoordinator {
     
     private func makeMainViewController() -> UIViewController {
         let signOutUseCase = SignOutUseCase(authRepository: self.authRepository)
-        let viewModel = MainTabViewModel(signOutUseCase: signOutUseCase)
+        let viewModel = MainTabViewModel(
+                    signOutUseCase: signOutUseCase,
+                    firestore: Firestore.firestore()
+                )
         return MainTabViewController(viewModel: viewModel)
     }
 }
