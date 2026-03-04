@@ -16,14 +16,11 @@ final class TodayViewController: UIViewController {
     
     private let disposeBag = DisposeBag()
     
-    // MARK: 최종 저장 값
-    private struct SavedState: Equatable {
-        let selectedIndex: Int
-        let caption: String?
-    }
-    
+    // MARK: 선택 Index
     private var selectedIndexPath: IndexPath?
-    private let collectionViewHeight: CGFloat = 160
+    
+    // MARK: 동적으로 변동되는 CollectionView 높이
+    private var emotionContainerHeightConstraint: Constraint?
     
     // MARK: 우측 상단 저장 버튼
     private lazy var saveBarButtonItem: UIBarButtonItem = {
@@ -47,16 +44,6 @@ final class TodayViewController: UIViewController {
         return label
     }()
     
-    // MARK: 이모션 컨테이너 뷰
-    private let emotionContainerView: UIView = {
-        let view = UIView()
-        view.backgroundColor = SemanticColor.bgApp.uiColor
-        view.layer.cornerRadius = 12
-        view.layer.borderWidth = 1.0
-        view.layer.borderColor = SemanticColor.borderDefault.uiColor.cgColor
-        return view
-    }()
-    
     // MARK: 이모션 컬렉션 뷰
     private lazy var collectionView: UICollectionView = {
         let layout = HashFlowLayout()
@@ -76,7 +63,7 @@ final class TodayViewController: UIViewController {
     private let captionLabel: UILabel = {
         let label = UILabel()
         label.text = "Caption"
-        label.font = Typography.body
+        label.font = Typography.title2
         label.textColor = SemanticColor.textSecondary.uiColor
         label.numberOfLines = 1
         return label
@@ -92,9 +79,10 @@ final class TodayViewController: UIViewController {
         return view
     }()
     
+    // MARK: 캡션 타이틀 뷰
     private let captionTextField: UITextField = {
         let textField = UITextField()
-        textField.font = Typography.caption
+        textField.font = Typography.body
         textField.textColor = SemanticColor.textPrimary.uiColor
         textField.placeholder = "A few words about today…"
         textField.returnKeyType = .done
@@ -116,14 +104,18 @@ final class TodayViewController: UIViewController {
         self.bind()
     }
     
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        self.updateEmotionContainerHeightIfNeeded()
+    }
+    
     private func setupLayout() {
         self.view.backgroundColor = SemanticColor.bgApp.uiColor
         
         self.navigationItem.rightBarButtonItem = self.saveBarButtonItem
         
         self.view.addSubview(self.emotionLabel)
-        self.view.addSubview(self.emotionContainerView)
-        self.emotionContainerView.addSubview(self.collectionView)
+        self.view.addSubview(self.collectionView)
         
         self.view.addSubview(self.captionLabel)
         self.view.addSubview(self.captionContainerView)
@@ -134,14 +126,11 @@ final class TodayViewController: UIViewController {
             make.horizontalEdges.equalToSuperview().inset(20)
         }
         
-        self.emotionContainerView.snp.makeConstraints { make in
-            make.top.equalTo(self.emotionLabel.snp.bottom).offset(12)
-            make.horizontalEdges.equalToSuperview().inset(20)
-            make.height.equalTo(self.collectionViewHeight)
-        }
-        
         self.collectionView.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(4)
+            make.top.equalTo(self.emotionLabel.snp.bottom).offset(12)
+            make.leading.equalToSuperview().offset(20)
+            make.trailing.equalToSuperview().offset(12)
+            self.emotionContainerHeightConstraint = make.height.equalTo(0).constraint
         }
         
         self.captionLabel.snp.makeConstraints { make in
@@ -160,6 +149,8 @@ final class TodayViewController: UIViewController {
     }
     
     private func bind() {
+        self.collectionView.reloadData()
+        
         // MARK: Right BarButton으로 저장
         self.saveBarButtonItem.rx.tap
             .bind { [weak self] in
@@ -189,6 +180,18 @@ final class TodayViewController: UIViewController {
         guard let indexPath = self.selectedIndexPath else { return }
         
         guard let record = self.viewModel.saveTodayEmotion(selectedIndex: indexPath.item, caption: self.captionTextField.text) else { return }
+    }
+    
+    private func updateEmotionContainerHeightIfNeeded() {
+        self.collectionView.layoutIfNeeded()
+        let contentHeight = self.collectionView.collectionViewLayout.collectionViewContentSize.height
+        let targetHeight = ceil(contentHeight + 8)
+        guard targetHeight > 0 else { return }
+        
+        let currentHeight = self.emotionContainerHeightConstraint?.layoutConstraints.first?.constant ?? 0
+        guard abs(currentHeight - targetHeight) > 0.5 else { return }
+        
+        self.emotionContainerHeightConstraint?.update(offset: targetHeight)
     }
 }
 
