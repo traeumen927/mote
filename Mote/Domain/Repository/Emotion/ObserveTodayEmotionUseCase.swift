@@ -9,15 +9,16 @@ import Foundation
 import FirebaseAuth
 
 final class ObserveTodayEmotionUseCase {
-
+    
     enum ObserveTodayEmotionError: Error {
         case unauthenticated
     }
-
+    
     private let todayEmotionRepository: TodayEmotionRepository
     private let auth: Auth
     private let calendar: Calendar
-
+    private var removeObserver: (() -> Void)?
+    
     init(
         todayEmotionRepository: TodayEmotionRepository,
         auth: Auth = .auth(),
@@ -27,16 +28,17 @@ final class ObserveTodayEmotionUseCase {
         self.auth = auth
         self.calendar = calendar
     }
-
+    
     func execute(completion: @escaping (Result<EmotionRecord?, Error>) -> Void) {
         guard let uid = self.auth.currentUser?.uid else {
             completion(.failure(ObserveTodayEmotionError.unauthenticated))
             return
         }
-
+        
         let dateKey = self.format(Date(), format: "yyyy-MM-dd")
-
-        self.todayEmotionRepository.fetchTodayEmotion(
+        
+        self.removeObserver?()
+        self.removeObserver = self.todayEmotionRepository.observeTodayEmotion(
             uid: uid,
             dateKey: dateKey
         ) { result in
@@ -52,7 +54,16 @@ final class ObserveTodayEmotionUseCase {
             }
         }
     }
-
+    
+    func stop() {
+        self.removeObserver?()
+        self.removeObserver = nil
+    }
+    
+    deinit {
+        self.stop()
+    }
+    
     private func format(_ date: Date, format: String) -> String {
         let formatter = DateFormatter()
         formatter.calendar = self.calendar

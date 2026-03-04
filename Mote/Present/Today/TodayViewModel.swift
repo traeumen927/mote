@@ -46,6 +46,10 @@ final class TodayViewModel {
         self.observeTodayEmotionUseCase = observeTodayEmotionUseCase
     }
     
+    deinit {
+        self.observeTodayEmotionUseCase.stop()
+    }
+    
     func observeTodayEmotion() {
         self.observeTodayEmotionUseCase.execute { [weak self] result in
             guard let self else { return }
@@ -68,6 +72,7 @@ final class TodayViewModel {
     
     func updateCaption(_ caption: String?) {
         self.caption = caption
+        self.syncCanSave()
     }
     
     func saveTodayEmotion() {

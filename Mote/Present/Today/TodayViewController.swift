@@ -152,6 +152,8 @@ final class TodayViewController: UIViewController {
     private func bind() {
         self.collectionView.reloadData()
         
+        self.viewModel.observeTodayEmotion()
+        
         // MARK: Right BarButton으로 저장
         self.saveBarButtonItem.rx.tap
             .bind { [weak self] in

@@ -15,31 +15,36 @@ final class TodayEmotionRepositoryImpl: TodayEmotionRepository {
         self.firestore = firestore
     }
     
-    func fetchTodayEmotion(
+    @discardableResult
+    func observeTodayEmotion(
         uid: String,
         dateKey: String,
-        completion: @escaping (Result<EmotionRecord?, Error>) -> Void
-    ) {
+        onChange: @escaping (Result<EmotionRecord?, Error>) -> Void
+    ) -> (() -> Void) {
         let documentRef = self.firestore
             .collection("users")
             .document(uid)
             .collection("dailyEmotions")
             .document(dateKey)
         
-        documentRef.getDocument { snapshot, error in
+        let listener = documentRef.addSnapshotListener { snapshot, error in
             if let error {
-                completion(.failure(error))
+                onChange(.failure(error))
                 return
             }
             
             guard let snapshot, snapshot.exists, let data = snapshot.data() else {
-                completion(.success(nil))
+                onChange(.success(nil))
                 return
             }
             
             let emotion = data["emotion"] as? String ?? ""
             let caption = data["caption"] as? String
-            completion(.success(EmotionRecord(emotion: emotion, caption: caption)))
+            onChange(.success(EmotionRecord(emotion: emotion, caption: caption)))
+        }
+        
+        return {
+            listener.remove()
         }
     }
     
@@ -71,11 +76,7 @@ final class TodayEmotionRepositoryImpl: TodayEmotionRepository {
                 "updatedAt": FieldValue.serverTimestamp()
             ]
             
-            if let caption {
-                payload["caption"] = caption
-            } else {
-                payload["caption"] = FieldValue.delete()
-            }
+            payload["caption"] = caption ?? ""
             
             if snapshot?.exists != true {
                 payload["createdAt"] = FieldValue.serverTimestamp()
