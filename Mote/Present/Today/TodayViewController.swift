@@ -23,7 +23,7 @@ final class TodayViewController: UIViewController {
     }
     
     private var selectedIndexPath: IndexPath?
-//    private let collectionViewHeight: CGFloat = 160
+    private let collectionViewHeight: CGFloat = 160
     
     // MARK: 우측 상단 저장 버튼
     private lazy var saveBarButtonItem: UIBarButtonItem = {
@@ -137,6 +137,7 @@ final class TodayViewController: UIViewController {
         self.emotionContainerView.snp.makeConstraints { make in
             make.top.equalTo(self.emotionLabel.snp.bottom).offset(12)
             make.horizontalEdges.equalToSuperview().inset(20)
+            make.height.equalTo(self.collectionViewHeight)
         }
         
         self.collectionView.snp.makeConstraints { make in
