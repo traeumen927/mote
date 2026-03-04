@@ -8,6 +8,13 @@
 import Foundation
 
 protocol TodayEmotionRepository {
+
+    func fetchTodayEmotion(
+        uid: String,
+        dateKey: String,
+        completion: @escaping (Result<EmotionRecord?, Error>) -> Void
+    )
+           
     func saveTodayEmotion(
         uid: String,
         emotion: String,

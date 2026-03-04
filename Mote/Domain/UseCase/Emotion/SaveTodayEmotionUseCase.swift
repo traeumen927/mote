@@ -57,7 +57,7 @@ final class SaveTodayEmotionUseCase {
         let dateKey = self.format(now, format: "yyyy-MM-dd")
         let yearMonth = self.format(now, format: "yyyy-MM")
         let day = self.calendar.component(.day, from: now)
-        let emotion = emotions[selectedIndex].displayText
+        let emotion = emotions[selectedIndex].rawValue
         let finalCaption = normalizedCaption?.isEmpty == true ? nil : normalizedCaption
 
         self.todayEmotionRepository.saveTodayEmotion(

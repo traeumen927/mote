@@ -143,6 +143,10 @@ final class TodayViewController: UIViewController {
         self.captionTextField.snp.makeConstraints { make in
             make.edges.equalToSuperview().inset(8)
         }
+        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard))
+        tapGesture.cancelsTouchesInView = false
+        self.view.addGestureRecognizer(tapGesture)
     }
     
     private func bind() {
@@ -177,6 +181,16 @@ final class TodayViewController: UIViewController {
             }
             .disposed(by: self.disposeBag)
         
+        self.viewModel.initialStateLoaded
+            .bind { [weak self] state in
+                guard let self else { return }
+                let indexPath = IndexPath(item: state.selectedIndex, section: 0)
+                self.collectionView.selectItem(at: indexPath, animated: false, scrollPosition: [])
+                self.captionTextField.text = state.caption
+                self.captionContainerView.isHidden = false
+            }
+            .disposed(by: self.disposeBag)
+        
         self.viewModel.canSave
             .drive(self.saveBarButtonItem.rx.isEnabled)
             .disposed(by: self.disposeBag)
@@ -187,7 +201,8 @@ final class TodayViewController: UIViewController {
             .disposed(by: self.disposeBag)
         
         self.viewModel.saveSucceeded
-            .bind { data in
+            .bind { [weak self] data in
+                self?.captionTextField.resignFirstResponder()
                 print("✅ Saved emotion: \(data.emotion), dateKey: \(data.dateKey)")
             }
             .disposed(by: self.disposeBag)
@@ -209,6 +224,11 @@ final class TodayViewController: UIViewController {
         guard abs(currentHeight - targetHeight) > 0.5 else { return }
         
         self.emotionContainerHeightConstraint?.update(offset: targetHeight)
+    }
+    
+    @objc
+    private func dismissKeyboard() {
+        self.view.endEditing(true)
     }
 }
 

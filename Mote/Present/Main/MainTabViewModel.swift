@@ -20,7 +20,12 @@ final class MainTabViewModel {
         let todayEmotionRepository = TodayEmotionRepositoryImpl(firestore: firestore)
         let saveTodayEmotionUseCase = SaveTodayEmotionUseCase(todayEmotionRepository: todayEmotionRepository)
         
-        self.todayViewModel = TodayViewModel(saveTodayEmotionUseCase: saveTodayEmotionUseCase)
+        let observeTodayEmotionUseCase = ObserveTodayEmotionUseCase(todayEmotionRepository: todayEmotionRepository)
+        
+        self.todayViewModel = TodayViewModel(
+            saveTodayEmotionUseCase: saveTodayEmotionUseCase,
+            observeTodayEmotionUseCase: observeTodayEmotionUseCase
+        )
         self.driftViewModel = DriftViewModel()
         self.spaceViewModel = SpaceViewModel(signOutUseCase: signOutUseCase)
     }
