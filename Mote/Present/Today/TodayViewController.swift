@@ -15,19 +15,51 @@ final class TodayViewController: UIViewController {
     private let viewModel: TodayViewModel
     
     private let disposeBag = DisposeBag()
-    private var selectedIndexPath: IndexPath?
-    private let collectionViewHeight: CGFloat = 160
     
-    private let titleLabel: UILabel = {
+    // MARK: 최종 저장 값
+    private struct SavedState: Equatable {
+        let selectedIndex: Int
+        let caption: String?
+    }
+    
+    private var selectedIndexPath: IndexPath?
+//    private let collectionViewHeight: CGFloat = 160
+    
+    // MARK: 우측 상단 저장 버튼
+    private lazy var saveBarButtonItem: UIBarButtonItem = {
+        let button = UIBarButtonItem(
+            image: UIImage(systemName: "checkmark"),
+            style: .done,
+            target: nil,
+            action: nil
+        )
+        button.isEnabled = false
+        return button
+    }()
+    
+    // MARK: 컬렉션 뷰 프롬프트 라벨
+    private let emotionLabel: UILabel = {
         let label = UILabel()
-        label.text = "Today's Emotion"
-        label.font = .systemFont(ofSize: 24, weight: .bold)
-        label.textColor = SemanticColor.textPrimary.uiColor
+        label.text = "How did today feel?"
+        label.font = Typography.title2
+        label.textColor = SemanticColor.textSecondary.uiColor
+        label.numberOfLines = 1
         return label
     }()
     
+    // MARK: 이모션 컨테이너 뷰
+    private let emotionContainerView: UIView = {
+        let view = UIView()
+        view.backgroundColor = SemanticColor.bgApp.uiColor
+        view.layer.cornerRadius = 12
+        view.layer.borderWidth = 1.0
+        view.layer.borderColor = SemanticColor.borderDefault.uiColor.cgColor
+        return view
+    }()
+    
+    // MARK: 이모션 컬렉션 뷰
     private lazy var collectionView: UICollectionView = {
-        let layout = LeftAlignedCollectionViewFlowLayout()
+        let layout = HashFlowLayout()
         layout.minimumInteritemSpacing = 8
         layout.minimumLineSpacing = 8
         layout.sectionInset = .zero
@@ -40,33 +72,33 @@ final class TodayViewController: UIViewController {
         return view
     }()
     
+    // MARK: 캡션 프롬프트 라벨
+    private let captionLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Caption"
+        label.font = Typography.body
+        label.textColor = SemanticColor.textSecondary.uiColor
+        label.numberOfLines = 1
+        return label
+    }()
+    
+    // MARK: 캡션 컨테이너 뷰
     private let captionContainerView: UIView = {
         let view = UIView()
-        view.backgroundColor = SemanticColor.bgSurface.uiColor
+        view.backgroundColor = SemanticColor.bgApp.uiColor
         view.layer.cornerRadius = 12
-        view.isHidden = true
+        view.layer.borderWidth = 1.0
+        view.layer.borderColor = SemanticColor.borderDefault.uiColor.cgColor
         return view
     }()
     
-    private let captionTextView: UITextView = {
-        let textView = UITextView()
-        textView.font = .systemFont(ofSize: 14, weight: .regular)
-        textView.textColor = SemanticColor.textPrimary.uiColor
-        textView.backgroundColor = .clear
-        textView.textContainerInset = UIEdgeInsets(top: 10, left: 8, bottom: 10, right: 8)
-        return textView
-    }()
-    
-    private let saveButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setTitle("Save Today's Emotion", for: .normal)
-        button.titleLabel?.font = .systemFont(ofSize: 16, weight: .semibold)
-        button.backgroundColor = SemanticColor.accentPrimary.uiColor
-        button.setTitleColor(.white, for: .normal)
-        button.layer.cornerRadius = 12
-        button.isEnabled = false
-        button.alpha = 0.4
-        return button
+    private let captionTextField: UITextField = {
+        let textField = UITextField()
+        textField.font = Typography.caption
+        textField.textColor = SemanticColor.textPrimary.uiColor
+        textField.placeholder = "A few words about today…"
+        textField.returnKeyType = .done
+        return textField
     }()
     
     init(viewModel: TodayViewModel) {
@@ -87,54 +119,67 @@ final class TodayViewController: UIViewController {
     private func setupLayout() {
         self.view.backgroundColor = SemanticColor.bgApp.uiColor
         
-        self.view.addSubview(self.titleLabel)
-        self.view.addSubview(self.collectionView)
-        self.view.addSubview(self.captionContainerView)
-        self.captionContainerView.addSubview(self.captionTextView)
-        self.view.addSubview(self.saveButton)
+        self.navigationItem.rightBarButtonItem = self.saveBarButtonItem
         
-        self.titleLabel.snp.makeConstraints { make in
+        self.view.addSubview(self.emotionLabel)
+        self.view.addSubview(self.emotionContainerView)
+        self.emotionContainerView.addSubview(self.collectionView)
+        
+        self.view.addSubview(self.captionLabel)
+        self.view.addSubview(self.captionContainerView)
+        self.captionContainerView.addSubview(self.captionTextField)
+        
+        self.emotionLabel.snp.makeConstraints { make in
             make.top.equalTo(self.view.safeAreaLayoutGuide).offset(20)
             make.horizontalEdges.equalToSuperview().inset(20)
         }
         
-        self.collectionView.snp.makeConstraints { make in
-            make.top.equalTo(self.titleLabel.snp.bottom).offset(20)
+        self.emotionContainerView.snp.makeConstraints { make in
+            make.top.equalTo(self.emotionLabel.snp.bottom).offset(12)
             make.horizontalEdges.equalToSuperview().inset(20)
-            make.height.equalTo(self.collectionViewHeight)
+        }
+        
+        self.collectionView.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(4)
+        }
+        
+        self.captionLabel.snp.makeConstraints { make in
+            make.top.equalTo(self.collectionView.snp.bottom).offset(16)
+            make.horizontalEdges.equalToSuperview().inset(20)
         }
         
         self.captionContainerView.snp.makeConstraints { make in
-            make.top.equalTo(self.collectionView.snp.bottom).offset(16)
+            make.top.equalTo(self.captionLabel.snp.bottom).offset(12)
             make.horizontalEdges.equalToSuperview().inset(20)
-            make.height.equalTo(120)
         }
         
-        self.captionTextView.snp.makeConstraints { make in
+        self.captionTextField.snp.makeConstraints { make in
             make.edges.equalToSuperview().inset(8)
-        }
-        
-        self.saveButton.snp.makeConstraints { make in
-            make.top.equalTo(self.captionContainerView.snp.bottom).offset(16)
-            make.horizontalEdges.equalToSuperview().inset(20)
-            make.height.equalTo(48)
-            make.bottom.lessThanOrEqualTo(self.view.safeAreaLayoutGuide).inset(20)
         }
     }
     
     private func bind() {
-        self.saveButton.rx.tap
+        // MARK: Right BarButton으로 저장
+        self.saveBarButtonItem.rx.tap
             .bind { [weak self] in
                 self?.saveSelectedEmotion()
             }
             .disposed(by: self.disposeBag)
         
+        // MARK: ReturnKey로 저장
+        captionTextField.rx.controlEvent(.editingDidEndOnExit)
+            .bind { [weak self] in
+                self?.saveSelectedEmotion()
+            }
+            .disposed(by: disposeBag)
+        
+        // MARK: 감정이 선택됨
         self.collectionView.rx.itemSelected
             .bind { [weak self] indexPath in
-                self?.selectedIndexPath = indexPath
-                self?.captionContainerView.isHidden = false
-                self?.saveButton.isEnabled = true
-                self?.saveButton.alpha = 1.0
+                guard let self else { return }
+                self.selectedIndexPath = indexPath
+                self.saveBarButtonItem.isEnabled = true
+                self.captionContainerView.isHidden = false
             }
             .disposed(by: self.disposeBag)
     }
@@ -142,23 +187,7 @@ final class TodayViewController: UIViewController {
     private func saveSelectedEmotion() {
         guard let indexPath = self.selectedIndexPath else { return }
         
-        guard let record = self.viewModel.saveTodayEmotion(selectedIndex: indexPath.item, caption: self.captionTextView.text) else {
-            self.showAlert(title: "Already Saved", message: "You already saved your emotion today. Please try again tomorrow.")
-            return
-        }
-        
-        let message = record.caption == nil
-        ? "Saved emotion: \(record.emotion)."
-        : "Saved emotion and caption: \(record.emotion)."
-        self.showAlert(title: "Saved", message: message)
-        self.saveButton.isEnabled = false
-        self.saveButton.alpha = 0.4
-    }
-    
-    private func showAlert(title: String, message: String) {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        self.present(alert, animated: true)
+        guard let record = self.viewModel.saveTodayEmotion(selectedIndex: indexPath.item, caption: self.captionTextField.text) else { return }
     }
 }
 

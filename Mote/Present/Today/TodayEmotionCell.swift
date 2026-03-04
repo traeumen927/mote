@@ -40,7 +40,7 @@ final class TodayEmotionCell: UICollectionViewCell {
     
     private func setupLayout() {
         self.contentView.layer.cornerRadius = 12
-        self.contentView.layer.borderColor = SemanticColor.accentPrimary.uiColor.cgColor
+        self.contentView.layer.borderColor = SemanticColor.borderStrong.uiColor.cgColor
         self.contentView.addSubview(self.label)
         
         self.label.snp.makeConstraints { make in
@@ -52,7 +52,7 @@ final class TodayEmotionCell: UICollectionViewCell {
     private func updateUI() {
         self.contentView.layer.borderWidth = self.isSelected ? 1 : 0
         self.contentView.backgroundColor = self.isSelected
-            ? SemanticColor.bgSurface.uiColor
-            : SemanticColor.bgApp.uiColor
+            ? SemanticColor.bgElevated.uiColor
+            : SemanticColor.bgSurface.uiColor
     }
 }
