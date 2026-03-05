@@ -17,15 +17,14 @@ final class TodayEmotionRepositoryImpl: TodayEmotionRepository {
     
     @discardableResult
     func observeTodayEmotion(
-        uid: String,
-        dateKey: String,
+        request: ObserveTodayEmotionRequest,
         onChange: @escaping (Result<EmotionRecord?, Error>) -> Void
     ) -> (() -> Void) {
         let documentRef = self.firestore
             .collection("users")
-            .document(uid)
+            .document(request.uid)
             .collection("dailyEmotions")
-            .document(dateKey)
+            .document(request.dateKey)
         
         let listener = documentRef.addSnapshotListener { snapshot, error in
             if let error {
@@ -38,9 +37,8 @@ final class TodayEmotionRepositoryImpl: TodayEmotionRepository {
                 return
             }
             
-            let emotion = data["emotion"] as? String ?? ""
-            let caption = data["caption"] as? String
-            onChange(.success(EmotionRecord(emotion: emotion, caption: caption)))
+            let dto = EmotionRecordDTO(data: data, dateKey: request.dateKey)
+            onChange(.success(dto.toDomain()))
         }
         
         return {
@@ -49,19 +47,14 @@ final class TodayEmotionRepositoryImpl: TodayEmotionRepository {
     }
     
     func saveTodayEmotion(
-        uid: String,
-        emotion: String,
-        caption: String?,
-        dateKey: String,
-        yearMonth: String,
-        day: Int,
+        request: SaveTodayEmotionRequest,
         completion: @escaping (Result<Void, Error>) -> Void
     ) {
         let documentRef = self.firestore
             .collection("users")
-            .document(uid)
+            .document(request.uid)
             .collection("dailyEmotions")
-            .document(dateKey)
+            .document(request.dateKey)
         
         documentRef.getDocument { snapshot, error in
             if let error {
@@ -70,13 +63,13 @@ final class TodayEmotionRepositoryImpl: TodayEmotionRepository {
             }
             
             var payload: [String: Any] = [
-                "emotion": emotion,
-                "yearMonth": yearMonth,
-                "day": day,
+                "emotion": request.emotion,
+                "yearMonth": request.yearMonth,
+                "day": request.day,
                 "updatedAt": FieldValue.serverTimestamp()
             ]
             
-            payload["caption"] = caption ?? ""
+            payload["caption"] = request.caption
             
             if snapshot?.exists != true {
                 payload["createdAt"] = FieldValue.serverTimestamp()

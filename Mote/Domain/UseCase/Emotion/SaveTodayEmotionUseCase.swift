@@ -11,21 +11,21 @@ import FirebaseAuth
 final class SaveTodayEmotionUseCase {
     struct ResultData {
         let emotion: String
-        let caption: String?
+        let caption: String
         let dateKey: String
         let yearMonth: String
         let day: Int
     }
-
+    
     enum SaveTodayEmotionError: Error {
         case invalidEmotionSelection
         case unauthenticated
     }
-
+    
     private let todayEmotionRepository: TodayEmotionRepository
     private let auth: Auth
     private let calendar: Calendar
-
+    
     init(
         todayEmotionRepository: TodayEmotionRepository,
         auth: Auth = .auth(),
@@ -35,7 +35,7 @@ final class SaveTodayEmotionUseCase {
         self.auth = auth
         self.calendar = calendar
     }
-
+    
     func execute(
         emotions: [EmotionItem],
         selectedIndex: Int,
@@ -46,33 +46,35 @@ final class SaveTodayEmotionUseCase {
             completion(.failure(SaveTodayEmotionError.invalidEmotionSelection))
             return
         }
-
+        
         guard let uid = self.auth.currentUser?.uid else {
             completion(.failure(SaveTodayEmotionError.unauthenticated))
             return
         }
-
-        let normalizedCaption = caption?.trimmingCharacters(in: .whitespacesAndNewlines)
+        
         let now = Date()
         let dateKey = self.format(now, format: "yyyy-MM-dd")
         let yearMonth = self.format(now, format: "yyyy-MM")
         let day = self.calendar.component(.day, from: now)
         let emotion = emotions[selectedIndex].rawValue
-        let finalCaption = normalizedCaption?.isEmpty == true ? nil : normalizedCaption
-
+        let trimmedCaption = caption?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let normalizedCaption = trimmedCaption ?? ""
+        
         self.todayEmotionRepository.saveTodayEmotion(
-            uid: uid,
-            emotion: emotion,
-            caption: finalCaption,
-            dateKey: dateKey,
-            yearMonth: yearMonth,
-            day: day
+            request: SaveTodayEmotionRequest(
+                uid: uid,
+                emotion: emotion,
+                caption: normalizedCaption,
+                dateKey: dateKey,
+                yearMonth: yearMonth,
+                day: day
+            )
         ) { result in
             switch result {
             case .success:
                 completion(.success(ResultData(
                     emotion: emotion,
-                    caption: finalCaption,
+                    caption: normalizedCaption,
                     dateKey: dateKey,
                     yearMonth: yearMonth,
                     day: day
@@ -82,7 +84,7 @@ final class SaveTodayEmotionUseCase {
             }
         }
     }
-
+    
     private func format(_ date: Date, format: String) -> String {
         let formatter = DateFormatter()
         formatter.calendar = self.calendar

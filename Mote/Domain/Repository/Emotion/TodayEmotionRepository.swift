@@ -11,18 +11,12 @@ protocol TodayEmotionRepository {
     
     @discardableResult
     func observeTodayEmotion(
-        uid: String,
-        dateKey: String,
+        request: ObserveTodayEmotionRequest,
         onChange: @escaping (Result<EmotionRecord?, Error>) -> Void
     ) -> (() -> Void)
     
     func saveTodayEmotion(
-        uid: String,
-        emotion: String,
-        caption: String?,
-        dateKey: String,
-        yearMonth: String,
-        day: Int,
+        request: SaveTodayEmotionRequest,
         completion: @escaping (Result<Void, Error>) -> Void
     )
 }

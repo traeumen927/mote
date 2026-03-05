@@ -39,16 +39,14 @@ final class ObserveTodayEmotionUseCase {
         
         self.removeObserver?()
         self.removeObserver = self.todayEmotionRepository.observeTodayEmotion(
-            uid: uid,
-            dateKey: dateKey
+            request: ObserveTodayEmotionRequest(
+                uid: uid,
+                dateKey: dateKey
+            )
         ) { result in
             switch result {
             case .success(let data):
-                guard let data else {
-                    completion(.success(nil))
-                    return
-                }
-                completion(.success(EmotionRecord(emotion: data.emotion, caption: data.caption)))
+                completion(.success(data))
             case .failure(let error):
                 completion(.failure(error))
             }
