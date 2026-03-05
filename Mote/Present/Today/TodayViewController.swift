@@ -86,6 +86,16 @@ final class TodayViewController: UIViewController {
         return textField
     }()
     
+    // MARK: 캡션 글자수 라벨
+    private let captionCountLabel: UILabel = {
+        let label = UILabel()
+        label.font = Typography.caption
+        label.textColor = SemanticColor.textDisabled.uiColor
+        label.textAlignment = .right
+        label.text = "(0/\(TodayViewModel.captionMaxLength))"
+        return label
+    }()
+    
     init(viewModel: TodayViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
@@ -117,6 +127,7 @@ final class TodayViewController: UIViewController {
         self.view.addSubview(self.captionLabel)
         self.view.addSubview(self.captionContainerView)
         self.captionContainerView.addSubview(self.captionTextField)
+        self.captionContainerView.addSubview(self.captionCountLabel)
         
         self.emotionLabel.snp.makeConstraints { make in
             make.top.equalTo(self.view.safeAreaLayoutGuide).offset(20)
@@ -141,7 +152,14 @@ final class TodayViewController: UIViewController {
         }
         
         self.captionTextField.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(8)
+            make.leading.equalToSuperview().inset(8)
+            make.verticalEdges.equalToSuperview().inset(8)
+            make.trailing.equalTo(self.captionCountLabel.snp.leading).offset(-8)
+        }
+        
+        self.captionCountLabel.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().inset(8)
+            make.centerY.equalTo(self.captionTextField)
         }
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard))
@@ -179,7 +197,11 @@ final class TodayViewController: UIViewController {
         
         self.captionTextField.rx.text
             .bind { [weak self] text in
-                self?.viewModel.updateCaption(text)
+                guard let self else { return }
+                let sanitizedCaption = self.viewModel.updateCaption(text)
+                if self.captionTextField.text != sanitizedCaption {
+                    self.captionTextField.text = sanitizedCaption
+                }
             }
             .disposed(by: self.disposeBag)
         
@@ -195,6 +217,10 @@ final class TodayViewController: UIViewController {
         
         self.viewModel.canSave
             .drive(self.saveBarButtonItem.rx.isEnabled)
+            .disposed(by: self.disposeBag)
+        
+        self.viewModel.captionCountText
+            .drive(self.captionCountLabel.rx.text)
             .disposed(by: self.disposeBag)
         
         self.viewModel.isLoading

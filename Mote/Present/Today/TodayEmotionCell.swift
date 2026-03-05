@@ -20,7 +20,7 @@ final class TodayEmotionCell: UICollectionViewCell {
     private let label: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 14, weight: .medium)
-        label.textColor = SemanticColor.textPrimary.uiColor
+        label.textColor = SemanticColor.textUnSelected.uiColor
         return label
     }()
     
@@ -40,7 +40,7 @@ final class TodayEmotionCell: UICollectionViewCell {
     
     private func setupLayout() {
         self.contentView.layer.cornerRadius = 12
-        self.contentView.layer.borderColor = SemanticColor.borderStrong.uiColor.cgColor
+        self.contentView.layer.borderColor = SemanticColor.borderSelection.uiColor.cgColor
         self.contentView.addSubview(self.label)
         
         self.label.snp.makeConstraints { make in
@@ -51,8 +51,7 @@ final class TodayEmotionCell: UICollectionViewCell {
     
     private func updateUI() {
         self.contentView.layer.borderWidth = self.isSelected ? 1 : 0
-        self.contentView.backgroundColor = self.isSelected
-            ? SemanticColor.bgElevated.uiColor
-            : SemanticColor.bgSurface.uiColor
+        self.contentView.backgroundColor = self.isSelected ? SemanticColor.bgSelection.uiColor : SemanticColor.bgUnSelection.uiColor
+        self.label.textColor = self.isSelected ? SemanticColor.textSelected.uiColor : SemanticColor.textUnSelected.uiColor
     }
 }

@@ -19,16 +19,15 @@ enum SemanticColor {
     case bgInteractivePressed
     case bgDisabled
     case bgAccentSubtle
+    case bgSelection
+    case bgUnSelection
 
     // MARK: - Text
     case textPrimary
     case textSecondary
-    case textTertiary
     case textDisabled
-    case textOnAccent
-    case textDestructive
-    case textSuccess
-    case textWarning
+    case textSelected
+    case textUnSelected
 
     // MARK: - Icon
     case iconPrimary
@@ -44,6 +43,7 @@ enum SemanticColor {
     case divider
     case borderAccent
     case borderDestructive
+    case borderSelection
 
     // MARK: - Accent
     case accentPrimary
@@ -92,6 +92,12 @@ extension SemanticColor {
 
         case .bgAccentSubtle:
             return .palette(.A20)
+            
+        case .bgSelection:
+            return .palette(.MB20)
+            
+        case .bgUnSelection:
+            return .palette(.MB10)
 
 
         // MARK: - Text
@@ -102,23 +108,14 @@ extension SemanticColor {
         case .textSecondary:
             return .palette(.I30)
 
-        case .textTertiary:
-            return .palette(.I20)
-
         case .textDisabled:
             return .palette(.I10)
-
-        case .textOnAccent:
-            return .palette(.I40)
-
-        case .textDestructive:
-            return .palette(.SR40)
-
-        case .textSuccess:
-            return .palette(.SG40)
-
-        case .textWarning:
-            return .palette(.SY40)
+            
+        case .textSelected:
+            return .palette(.CT20)
+            
+        case .textUnSelected:
+            return .palette(.CT10)
 
 
         // MARK: - Icon
@@ -158,6 +155,9 @@ extension SemanticColor {
 
         case .borderDestructive:
             return .palette(.SR40)
+            
+        case .borderSelection:
+            return .palette(.MB30)
 
 
         // MARK: - Accent

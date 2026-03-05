@@ -16,7 +16,7 @@ enum PaletteColor: String {
     // Neutral
     case N10, N20, N30, N40, N50
     // State
-    case SG40, SS40, SR40, SY40
+    case SG20, SG30, SG40, SS40, SR40, SY40, MB10, MB20, MB30, CT10, CT20
 }
 
 extension UIColor {

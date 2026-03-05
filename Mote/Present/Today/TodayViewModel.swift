@@ -18,14 +18,22 @@ final class TodayViewModel {
     
     let items = EmotionItem.allCases
     
+    static let captionMaxLength = 20
+    
     let isLoading = BehaviorRelay<Bool>(value: false)
     let saveSucceeded = PublishRelay<SaveTodayEmotionUseCase.ResultData>()
     let saveFailed = PublishRelay<Error>()
     let initialStateLoaded = PublishRelay<TodayInitialState>()
     
     private let canSaveRelay = BehaviorRelay<Bool>(value: false)
+    private let captionCountTextRelay = BehaviorRelay<String>(value: "0/\(TodayViewModel.captionMaxLength)")
+    
     var canSave: Driver<Bool> {
         self.canSaveRelay.asDriver()
+    }
+    
+    var captionCountText: Driver<String> {
+        self.captionCountTextRelay.asDriver()
     }
     
     private var selectedIndex: Int?
@@ -70,9 +78,13 @@ final class TodayViewModel {
         self.syncCanSave()
     }
     
-    func updateCaption(_ caption: String?) {
-        self.caption = caption
+    @discardableResult
+    func updateCaption(_ caption: String?) -> String? {
+        let sanitizedCaption = self.sanitizedCaption(caption)
+        self.caption = sanitizedCaption
+        self.syncCaptionCount()
         self.syncCanSave()
+        return sanitizedCaption
     }
     
     func saveTodayEmotion() {
@@ -95,7 +107,7 @@ final class TodayViewModel {
                 switch result {
                 case .success(let data):
                     self.latestSavedEmotion = data.emotion
-                    self.latestSavedCaption = data.caption
+                    self.latestSavedCaption = self.sanitizedCaption(data.caption)
                     self.saveSucceeded.accept(data)
                 case .failure(let error):
                     self.saveFailed.accept(error)
@@ -107,17 +119,20 @@ final class TodayViewModel {
     
     private func applyLatestSavedData(_ data: EmotionRecord?) {
         self.latestSavedEmotion = data?.emotion
-        self.latestSavedCaption = data?.caption
+        self.latestSavedCaption = self.sanitizedCaption(data?.caption)
         
         guard let data,
               let selectedIndex = EmotionItem.index(matching: data.emotion) else {
+            self.syncCaptionCount()
             self.syncCanSave()
             return
         }
         
         self.selectedIndex = selectedIndex
-        self.caption = data.caption
-        self.initialStateLoaded.accept(TodayInitialState(selectedIndex: selectedIndex, caption: data.caption))
+        let caption = self.sanitizedCaption(data.caption)
+        self.caption = caption
+        self.initialStateLoaded.accept(TodayInitialState(selectedIndex: selectedIndex, caption: caption))
+        self.syncCaptionCount()
         self.syncCanSave()
     }
     
@@ -138,6 +153,16 @@ final class TodayViewModel {
         
         let hasChanges = selectedEmotion != self.latestSavedEmotion || normalizedCurrentCaption != normalizedLatestCaption
         self.canSaveRelay.accept(hasChanges)
+    }
+    
+    private func syncCaptionCount() {
+        let currentCount = self.caption?.count ?? 0
+        self.captionCountTextRelay.accept("(\(currentCount)/\(Self.captionMaxLength))")
+    }
+    
+    private func sanitizedCaption(_ caption: String?) -> String? {
+        guard let caption else { return nil }
+        return String(caption.prefix(Self.captionMaxLength))
     }
     
     private func normalize(_ caption: String?) -> String? {
