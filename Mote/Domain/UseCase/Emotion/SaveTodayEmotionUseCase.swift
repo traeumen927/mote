@@ -40,6 +40,7 @@ final class SaveTodayEmotionUseCase {
         emotions: [EmotionItem],
         selectedIndex: Int,
         caption: String?,
+        date: Date = Date(),
         completion: @escaping (Result<ResultData, Error>) -> Void
     ) {
         guard emotions.indices.contains(selectedIndex) else {
@@ -52,7 +53,7 @@ final class SaveTodayEmotionUseCase {
             return
         }
         
-        let now = Date()
+        let now = date
         let dateKey = self.format(now, format: "yyyy-MM-dd")
         let yearMonth = self.format(now, format: "yyyy-MM")
         let day = self.calendar.component(.day, from: now)

@@ -29,13 +29,13 @@ final class ObserveTodayEmotionUseCase {
         self.calendar = calendar
     }
     
-    func execute(completion: @escaping (Result<EmotionRecord?, Error>) -> Void) {
+    func execute(date: Date = Date(), completion: @escaping (Result<EmotionRecord?, Error>) -> Void) {
         guard let uid = self.auth.currentUser?.uid else {
             completion(.failure(ObserveTodayEmotionError.unauthenticated))
             return
         }
         
-        let dateKey = self.format(Date(), format: "yyyy-MM-dd")
+        let dateKey = self.format(date, format: "yyyy-MM-dd")
         
         self.removeObserver?()
         self.removeObserver = self.todayEmotionRepository.observeTodayEmotion(

@@ -111,6 +111,11 @@ final class TodayViewController: UIViewController {
         self.bind()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.viewModel.refreshForTabReturnIfNeeded()
+    }
+    
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         self.updateEmotionContainerHeightIfNeeded()
@@ -128,6 +133,7 @@ final class TodayViewController: UIViewController {
         self.view.addSubview(self.captionContainerView)
         self.captionContainerView.addSubview(self.captionTextField)
         self.captionContainerView.addSubview(self.captionCountLabel)
+        self.captionContainerView.isHidden = true
         
         self.emotionLabel.snp.makeConstraints { make in
             make.top.equalTo(self.view.safeAreaLayoutGuide).offset(20)
@@ -172,6 +178,10 @@ final class TodayViewController: UIViewController {
         
         self.viewModel.observeTodayEmotion()
         
+        self.viewModel.titleText
+            .drive(self.navigationItem.rx.title)
+            .disposed(by: self.disposeBag)
+        
         // MARK: Right BarButton으로 저장
         self.saveBarButtonItem.rx.tap
             .bind { [weak self] in
@@ -212,6 +222,18 @@ final class TodayViewController: UIViewController {
                 self.collectionView.selectItem(at: indexPath, animated: false, scrollPosition: [])
                 self.captionTextField.text = state.caption
                 self.captionContainerView.isHidden = false
+            }
+            .disposed(by: self.disposeBag)
+        
+        self.viewModel.resetForNewDay
+            .bind { [weak self] in
+                guard let self else { return }
+                self.collectionView.indexPathsForSelectedItems?.forEach { indexPath in
+                    self.collectionView.deselectItem(at: indexPath, animated: false)
+                }
+                self.captionTextField.text = nil
+                self.captionContainerView.isHidden = true
+                self.captionTextField.resignFirstResponder()
             }
             .disposed(by: self.disposeBag)
         

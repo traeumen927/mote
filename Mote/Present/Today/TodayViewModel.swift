@@ -24,9 +24,11 @@ final class TodayViewModel {
     let saveSucceeded = PublishRelay<SaveTodayEmotionUseCase.ResultData>()
     let saveFailed = PublishRelay<Error>()
     let initialStateLoaded = PublishRelay<TodayInitialState>()
+    let resetForNewDay = PublishRelay<Void>()
     
     private let canSaveRelay = BehaviorRelay<Bool>(value: false)
-    private let captionCountTextRelay = BehaviorRelay<String>(value: "0/\(TodayViewModel.captionMaxLength)")
+    private let captionCountTextRelay = BehaviorRelay<String>(value: "(0/\(TodayViewModel.captionMaxLength))")
+    private let titleTextRelay = BehaviorRelay<String>(value: "")
     
     var canSave: Driver<Bool> {
         self.canSaveRelay.asDriver()
@@ -34,6 +36,10 @@ final class TodayViewModel {
     
     var captionCountText: Driver<String> {
         self.captionCountTextRelay.asDriver()
+    }
+    
+    var titleText: Driver<String> {
+        self.titleTextRelay.asDriver()
     }
     
     private var selectedIndex: Int?
@@ -45,13 +51,19 @@ final class TodayViewModel {
     private let saveTodayEmotionUseCase: SaveTodayEmotionUseCase
     
     private let observeTodayEmotionUseCase: ObserveTodayEmotionUseCase
+    private let calendar: Calendar
+    private var activeDate: Date
     
     init(
         saveTodayEmotionUseCase: SaveTodayEmotionUseCase,
-        observeTodayEmotionUseCase: ObserveTodayEmotionUseCase
+        observeTodayEmotionUseCase: ObserveTodayEmotionUseCase,
+        calendar: Calendar = .current
     ) {
         self.saveTodayEmotionUseCase = saveTodayEmotionUseCase
         self.observeTodayEmotionUseCase = observeTodayEmotionUseCase
+        self.calendar = calendar
+        self.activeDate = Date()
+        self.titleTextRelay.accept(Self.formatTitle(self.activeDate, calendar: calendar))
     }
     
     deinit {
@@ -59,18 +71,18 @@ final class TodayViewModel {
     }
     
     func observeTodayEmotion() {
-        self.observeTodayEmotionUseCase.execute { [weak self] result in
-            guard let self else { return }
-            
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let data):
-                    self.applyLatestSavedData(data)
-                case .failure(let error):
-                    self.saveFailed.accept(error)
-                }
-            }
-        }
+        self.observeForActiveDate()
+    }
+    
+    func refreshForTabReturnIfNeeded() {
+        let now = Date()
+        guard self.calendar.isDate(now, inSameDayAs: self.activeDate) == false else { return }
+        
+        self.activeDate = now
+        self.titleTextRelay.accept(Self.formatTitle(now, calendar: self.calendar))
+        self.resetCurrentState()
+        self.resetForNewDay.accept(())
+        self.observeForActiveDate()
     }
     
     func selectEmotion(at index: Int) {
@@ -97,7 +109,8 @@ final class TodayViewModel {
         self.saveTodayEmotionUseCase.execute(
             emotions: self.items,
             selectedIndex: selectedIndex,
-            caption: self.caption
+            caption: self.caption,
+            date: self.activeDate
         ) { [weak self] result in
             guard let self else { return }
             
@@ -117,12 +130,39 @@ final class TodayViewModel {
         }
     }
     
+    private func observeForActiveDate() {
+        self.titleTextRelay.accept(Self.formatTitle(self.activeDate, calendar: self.calendar))
+        self.observeTodayEmotionUseCase.execute(date: self.activeDate) { [weak self] result in
+            guard let self else { return }
+            
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let data):
+                    self.applyLatestSavedData(data)
+                case .failure(let error):
+                    self.saveFailed.accept(error)
+                }
+            }
+        }
+    }
+    
+    private func resetCurrentState() {
+        self.selectedIndex = nil
+        self.caption = nil
+        self.latestSavedEmotion = nil
+        self.latestSavedCaption = nil
+        self.syncCaptionCount()
+        self.syncCanSave()
+    }
+    
     private func applyLatestSavedData(_ data: EmotionRecord?) {
         self.latestSavedEmotion = data?.emotion
         self.latestSavedCaption = self.sanitizedCaption(data?.caption)
         
         guard let data,
               let selectedIndex = EmotionItem.index(matching: data.emotion) else {
+            self.selectedIndex = nil
+            self.caption = nil
             self.syncCaptionCount()
             self.syncCanSave()
             return
@@ -168,5 +208,14 @@ final class TodayViewModel {
     private func normalize(_ caption: String?) -> String? {
         let value = caption?.trimmingCharacters(in: .whitespacesAndNewlines)
         return value?.isEmpty == true ? nil : value
+    }
+    
+    private static func formatTitle(_ date: Date, calendar: Calendar) -> String {
+        let formatter = DateFormatter()
+        formatter.calendar = calendar
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = calendar.timeZone
+        formatter.dateFormat = "d MMM"
+        return formatter.string(from: date)
     }
 }
