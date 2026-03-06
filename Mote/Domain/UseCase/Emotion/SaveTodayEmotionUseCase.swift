@@ -22,12 +22,12 @@ final class SaveTodayEmotionUseCase {
         case unauthenticated
     }
     
-    private let todayEmotionRepository: TodayEmotionRepository
+    private let todayEmotionRepository: EmotionRepository
     private let auth: Auth
     private let calendar: Calendar
     
     init(
-        todayEmotionRepository: TodayEmotionRepository,
+        todayEmotionRepository: EmotionRepository,
         auth: Auth = .auth(),
         calendar: Calendar = .current
     ) {

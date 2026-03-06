@@ -14,13 +14,13 @@ final class ObserveTodayEmotionUseCase {
         case unauthenticated
     }
     
-    private let todayEmotionRepository: TodayEmotionRepository
+    private let todayEmotionRepository: EmotionRepository
     private let auth: Auth
     private let calendar: Calendar
     private var removeObserver: (() -> Void)?
     
     init(
-        todayEmotionRepository: TodayEmotionRepository,
+        todayEmotionRepository: EmotionRepository,
         auth: Auth = .auth(),
         calendar: Calendar = .current
     ) {

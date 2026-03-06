@@ -8,7 +8,7 @@
 import Foundation
 import FirebaseFirestore
 
-final class TodayEmotionRepositoryImpl: TodayEmotionRepository {
+final class EmotionRepositoryImpl: EmotionRepository {
     private let firestore: Firestore
     
     init(firestore: Firestore = .firestore()) {
@@ -84,5 +84,34 @@ final class TodayEmotionRepositoryImpl: TodayEmotionRepository {
                 completion(.success(()))
             }
         }
+    }
+    
+    func fetchRecentEmotions(
+        request: FetchRecentEmotionsRequest,
+        completion: @escaping (Result<[EmotionRecord], Error>) -> Void
+    ) {
+        self.firestore
+            .collection("users")
+            .document(request.uid)
+            .collection("dailyEmotions")
+            .order(by: FieldPath.documentID(), descending: true)
+            .limit(to: request.limit)
+            .getDocuments { snapshot, error in
+                if let error {
+                    completion(.failure(error))
+                    return
+                }
+                
+                guard let documents = snapshot?.documents else {
+                    completion(.success([]))
+                    return
+                }
+                
+                let records = documents.map { document in
+                    EmotionRecordDTO(data: document.data(), dateKey: document.documentID).toDomain()
+                }
+                
+                completion(.success(records))
+            }
     }
 }

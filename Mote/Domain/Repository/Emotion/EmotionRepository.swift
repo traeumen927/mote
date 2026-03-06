@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol TodayEmotionRepository {
+protocol EmotionRepository {
     
     @discardableResult
     func observeTodayEmotion(
@@ -18,5 +18,10 @@ protocol TodayEmotionRepository {
     func saveTodayEmotion(
         request: SaveTodayEmotionRequest,
         completion: @escaping (Result<Void, Error>) -> Void
+    )
+    
+    func fetchRecentEmotions(
+        request: FetchRecentEmotionsRequest,
+        completion: @escaping (Result<[EmotionRecord], Error>) -> Void
     )
 }

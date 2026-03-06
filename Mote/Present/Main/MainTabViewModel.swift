@@ -17,7 +17,7 @@ final class MainTabViewModel {
         signOutUseCase: SignOutUseCase,
         firestore: Firestore
     ) {
-        let todayEmotionRepository = TodayEmotionRepositoryImpl(firestore: firestore)
+        let todayEmotionRepository = EmotionRepositoryImpl(firestore: firestore)
         let saveTodayEmotionUseCase = SaveTodayEmotionUseCase(todayEmotionRepository: todayEmotionRepository)
         
         let observeTodayEmotionUseCase = ObserveTodayEmotionUseCase(todayEmotionRepository: todayEmotionRepository)
