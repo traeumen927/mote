@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import FirebaseAuth
 
 final class SaveTodayEmotionUseCase {
     struct ResultData {
@@ -23,16 +22,16 @@ final class SaveTodayEmotionUseCase {
     }
     
     private let todayEmotionRepository: EmotionRepository
-    private let auth: Auth
+    private let uidProvider: CurrentUserUIDProviding
     private let calendar: Calendar
     
     init(
         todayEmotionRepository: EmotionRepository,
-        auth: Auth = .auth(),
+        uidProvider: CurrentUserUIDProviding = FirebaseAuthSession.shared,
         calendar: Calendar = .current
     ) {
         self.todayEmotionRepository = todayEmotionRepository
-        self.auth = auth
+        self.uidProvider = uidProvider
         self.calendar = calendar
     }
     
@@ -48,7 +47,7 @@ final class SaveTodayEmotionUseCase {
             return
         }
         
-        guard let uid = self.auth.currentUser?.uid else {
+        guard let uid = self.uidProvider.currentUID else {
             completion(.failure(SaveTodayEmotionError.unauthenticated))
             return
         }

@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import FirebaseAuth
 
 final class ObserveTodayEmotionUseCase {
     
@@ -15,22 +14,22 @@ final class ObserveTodayEmotionUseCase {
     }
     
     private let todayEmotionRepository: EmotionRepository
-    private let auth: Auth
+    private let uidProvider: CurrentUserUIDProviding
     private let calendar: Calendar
     private var removeObserver: (() -> Void)?
     
     init(
         todayEmotionRepository: EmotionRepository,
-        auth: Auth = .auth(),
+        uidProvider: CurrentUserUIDProviding = FirebaseAuthSession.shared,
         calendar: Calendar = .current
     ) {
         self.todayEmotionRepository = todayEmotionRepository
-        self.auth = auth
+        self.uidProvider = uidProvider
         self.calendar = calendar
     }
     
     func execute(date: Date = Date(), completion: @escaping (Result<EmotionRecord?, Error>) -> Void) {
-        guard let uid = self.auth.currentUser?.uid else {
+        guard let uid = self.uidProvider.currentUID else {
             completion(.failure(ObserveTodayEmotionError.unauthenticated))
             return
         }
