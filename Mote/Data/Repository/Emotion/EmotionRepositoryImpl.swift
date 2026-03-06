@@ -94,7 +94,7 @@ final class EmotionRepositoryImpl: EmotionRepository {
             .collection("users")
             .document(request.uid)
             .collection("dailyEmotions")
-            .order(by: FieldPath.documentID(), descending: true)
+            .order(by: "createdAt", descending: true)
             .limit(to: request.limit)
             .getDocuments { snapshot, error in
                 if let error {

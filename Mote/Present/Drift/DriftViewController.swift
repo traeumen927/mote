@@ -26,11 +26,15 @@ final class DriftViewController: UIViewController {
         self.bind()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        self.viewModel.fetchRecentEmotions()
+    }
+    
     private func setupLayout() {
         self.view.backgroundColor = SemanticColor.bgApp.uiColor
     }
     
     private func bind() {
-        self.viewModel.fetchRecentEmotions()
+        
     }
 }
