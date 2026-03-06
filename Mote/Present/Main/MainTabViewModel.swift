@@ -22,11 +22,14 @@ final class MainTabViewModel {
         
         let observeTodayEmotionUseCase = ObserveTodayEmotionUseCase(todayEmotionRepository: todayEmotionRepository)
         
+        let fetchRecentEmotionsUseCase = FetchRecentEmotionsUseCase(todayEmotionRepository: todayEmotionRepository)
+        
         self.todayViewModel = TodayViewModel(
             saveTodayEmotionUseCase: saveTodayEmotionUseCase,
             observeTodayEmotionUseCase: observeTodayEmotionUseCase
         )
-        self.driftViewModel = DriftViewModel()
+        
+        self.driftViewModel = DriftViewModel(fetchRecentEmotionsUseCase: fetchRecentEmotionsUseCase)
         self.spaceViewModel = SpaceViewModel(signOutUseCase: signOutUseCase)
     }
 }
