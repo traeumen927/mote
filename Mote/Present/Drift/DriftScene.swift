@@ -10,6 +10,8 @@ import SpriteKit
 final class DriftScene: SKScene {
     private let worldBody = SKNode()
     private var emotionNodesByDateKey: [String: SKLabelNode] = [:]
+    private let horizontalCenteringForce: CGFloat = 0.42
+    private let maxSidewaysDriftForce: CGFloat = 0.06
     
     override func didMove(to view: SKView) {
         super.didMove(to: view)
@@ -75,24 +77,26 @@ final class DriftScene: SKScene {
     
     private func makeNode(for record: EmotionRecord) -> SKLabelNode {
         let node = SKLabelNode(text: record.emotion)
-        node.fontName = "Outfit-SemiBold"
-        node.fontSize = 28
+        node.fontSize = 50
         node.fontColor = .white
         node.verticalAlignmentMode = .center
         node.horizontalAlignmentMode = .center
         node.zPosition = 1
         
-        let x = CGFloat.random(in: 24...(max(self.size.width - 24, 24)))
+        let x = self.makeSpawnXPosition()
         let y = CGFloat.random(in: (self.size.height * 0.4)...(max(self.size.height - 24, self.size.height * 0.4)))
         node.position = CGPoint(x: x, y: y)
         
-        let body = SKPhysicsBody(circleOfRadius: max(node.frame.width, node.frame.height) * 0.6)
-        body.allowsRotation = false
-        body.restitution = 0.45
-        body.friction = 0.4
-        body.linearDamping = 0.25
+        let body = SKPhysicsBody(circleOfRadius: max(node.frame.width, node.frame.height) * 0.52)
+        body.allowsRotation = true
+        body.friction = 0.7
+        body.angularDamping = 0.35
+        body.linearDamping = 0.22
+        body.mass = 0.12
         body.affectedByGravity = true
         node.physicsBody = body
+        
+        self.applyInitialImpulse(to: node)
         
         return node
     }
@@ -101,13 +105,71 @@ final class DriftScene: SKScene {
         if node.text != record.emotion {
             node.text = record.emotion
             
-            let newBody = SKPhysicsBody(circleOfRadius: max(node.frame.width, node.frame.height) * 0.6)
-            newBody.allowsRotation = false
+            let newBody = SKPhysicsBody(circleOfRadius: max(node.frame.width, node.frame.height) * 0.52)
+            newBody.allowsRotation = true
             newBody.restitution = 0.45
-            newBody.friction = 0.4
-            newBody.linearDamping = 0.25
+            newBody.friction = 0.7
+            newBody.angularDamping = 0.35
+            newBody.linearDamping = 0.22
+            newBody.mass = 0.12
             newBody.affectedByGravity = true
             node.physicsBody = newBody
+            
+            self.applyInitialImpulse(to: node)
         }
+    }
+    
+    override func update(_ currentTime: TimeInterval) {
+        super.update(currentTime)
+        
+        let centerX = self.size.width * 0.5
+        self.emotionNodesByDateKey.values.forEach { node in
+            guard let body = node.physicsBody else { return }
+            
+            let distanceFromCenter = centerX - node.position.x
+            let normalizedDistance = max(-1, min(1, distanceFromCenter / max(self.size.width * 0.5, 1)))
+            let centeringForceX = normalizedDistance * self.horizontalCenteringForce
+            let driftForceX = CGFloat.random(in: -self.maxSidewaysDriftForce...self.maxSidewaysDriftForce)
+            
+            body.applyForce(CGVector(dx: centeringForceX + driftForceX, dy: 0))
+        }
+    }
+    
+    private func makeSpawnXPosition() -> CGFloat {
+        let minX = CGFloat(24)
+        let maxX = max(self.size.width - 24, minX)
+        let existingX = self.emotionNodesByDateKey.values.map(\.position.x)
+        
+        guard !existingX.isEmpty else {
+            return CGFloat.random(in: minX...maxX)
+        }
+        
+        var bestX = minX
+        var bestDistance = -CGFloat.greatestFiniteMagnitude
+        
+        stride(from: minX, through: maxX, by: 18).forEach { candidateX in
+            let nearestDistance = existingX
+                .map { abs($0 - candidateX) }
+                .min() ?? 0
+            
+            if nearestDistance > bestDistance {
+                bestDistance = nearestDistance
+                bestX = candidateX
+            }
+        }
+        
+        return bestX
+    }
+    
+    private func applyInitialImpulse(to node: SKLabelNode) {
+        guard let body = node.physicsBody else { return }
+        
+        let angle = CGFloat.random(in: (.pi * 0.3)...(.pi * 0.7))
+        let magnitude = CGFloat.random(in: 1.6...2.5)
+        let impulse = CGVector(dx: cos(angle) * magnitude, dy: sin(angle) * magnitude)
+        body.applyImpulse(impulse)
+        
+        let randomTorque = CGFloat.random(in: -0.022...0.022)
+        body.applyTorque(randomTorque)
     }
 }
