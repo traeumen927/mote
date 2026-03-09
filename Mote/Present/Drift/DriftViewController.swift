@@ -8,10 +8,14 @@
 import UIKit
 import SpriteKit
 import SnapKit
+import RxSwift
+import RxCocoa
 
 final class DriftViewController: UIViewController {
     
     private let viewModel: DriftViewModel
+    
+    private let disposeBag = DisposeBag()
     
     private let spriteView = SKView()
     private let driftScene = DriftScene(size: .zero)
@@ -39,7 +43,7 @@ final class DriftViewController: UIViewController {
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-
+        
         let sceneSize = self.spriteView.bounds.size
         self.driftScene.updateWorldBounds(for: sceneSize)
     }
@@ -48,12 +52,12 @@ final class DriftViewController: UIViewController {
         self.view.backgroundColor = SemanticColor.bgApp.uiColor
         
         self.spriteView.backgroundColor = .clear
-                self.spriteView.ignoresSiblingOrder = true
-
-                self.view.addSubview(self.spriteView)
-                self.spriteView.snp.makeConstraints { make in
-                    make.edges.equalToSuperview()
-                }
+        self.spriteView.ignoresSiblingOrder = true
+        
+        self.view.addSubview(self.spriteView)
+        self.spriteView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
     }
     
     private func setupScene() {
@@ -62,6 +66,12 @@ final class DriftViewController: UIViewController {
     }
     
     private func bind() {
-        
+        self.viewModel.recentEmotions
+            .map { Array($0.prefix(30)) }
+            .asDriver(onErrorJustReturn: [])
+            .drive(onNext: { [weak self] emotions in
+                self?.driftScene.apply(emotions: emotions)
+            })
+            .disposed(by: self.disposeBag)
     }
 }
