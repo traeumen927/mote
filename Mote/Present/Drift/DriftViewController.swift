@@ -38,7 +38,14 @@ final class DriftViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        self.spriteView.isPaused = false
         self.viewModel.fetchRecentEmotions()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        self.spriteView.isPaused = true
+        self.viewModel.cancelOngoingEventsAndClearItems()
     }
     
     override func viewDidLayoutSubviews() {
