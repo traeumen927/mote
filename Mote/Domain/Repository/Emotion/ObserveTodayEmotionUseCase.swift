@@ -20,7 +20,7 @@ final class ObserveTodayEmotionUseCase {
     
     init(
         todayEmotionRepository: EmotionRepository,
-        uidProvider: CurrentUserUIDProviding = FirebaseAuthSession.shared,
+        uidProvider: CurrentUserUIDProviding = ProfileSession.shared,
         calendar: Calendar = .current
     ) {
         self.todayEmotionRepository = todayEmotionRepository

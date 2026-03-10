@@ -15,14 +15,24 @@ final class MainTabViewModel {
     
     init(
         signOutUseCase: SignOutUseCase,
-        firestore: Firestore
+        firestore: Firestore,
+        uidProvider: CurrentUserUIDProviding = ProfileSession.shared
     ) {
         let todayEmotionRepository = EmotionRepositoryImpl(firestore: firestore)
-        let saveTodayEmotionUseCase = SaveTodayEmotionUseCase(todayEmotionRepository: todayEmotionRepository)
+        let saveTodayEmotionUseCase = SaveTodayEmotionUseCase(
+            todayEmotionRepository: todayEmotionRepository,
+            uidProvider: uidProvider
+        )
         
-        let observeTodayEmotionUseCase = ObserveTodayEmotionUseCase(todayEmotionRepository: todayEmotionRepository)
+        let observeTodayEmotionUseCase = ObserveTodayEmotionUseCase(
+            todayEmotionRepository: todayEmotionRepository,
+            uidProvider: uidProvider
+        )
         
-        let fetchRecentEmotionsUseCase = FetchRecentEmotionsUseCase(todayEmotionRepository: todayEmotionRepository)
+        let fetchRecentEmotionsUseCase = FetchRecentEmotionsUseCase(
+            todayEmotionRepository: todayEmotionRepository,
+            uidProvider: uidProvider
+        )
         
         self.todayViewModel = TodayViewModel(
             saveTodayEmotionUseCase: saveTodayEmotionUseCase,

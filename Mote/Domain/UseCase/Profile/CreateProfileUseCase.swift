@@ -18,7 +18,7 @@ final class CreateProfileUseCase {
     
     init(
         profileRepository: ProfileRepository,
-        uidProvider: CurrentUserUIDProviding = FirebaseAuthSession.shared
+        uidProvider: CurrentUserUIDProviding = ProfileSession.shared
     ) {
         self.profileRepository = profileRepository
         self.uidProvider = uidProvider

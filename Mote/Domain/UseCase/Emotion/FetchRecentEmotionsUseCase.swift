@@ -18,7 +18,7 @@ final class FetchRecentEmotionsUseCase {
     
     init(
         todayEmotionRepository: EmotionRepository,
-        uidProvider: CurrentUserUIDProviding = FirebaseAuthSession.shared
+        uidProvider: CurrentUserUIDProviding = ProfileSession.shared
     ) {
         self.todayEmotionRepository = todayEmotionRepository
         self.uidProvider = uidProvider

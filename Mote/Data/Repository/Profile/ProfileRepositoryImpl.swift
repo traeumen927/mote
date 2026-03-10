@@ -36,6 +36,7 @@ final class ProfileRepositoryImpl: ProfileRepository {
             let lastActiveAt = request.date
 
             let payload: [String: Any] = [
+                "uid": request.uid,
                 "username": request.username,
                 "createAt": createAt,
                 "lastActiveAt": lastActiveAt
@@ -47,7 +48,7 @@ final class ProfileRepositoryImpl: ProfileRepository {
                     return
                 }
 
-                completion(.success(ProfileDTO(data: payload).toDomain()))
+                completion(.success(ProfileDTO(uid: request.uid, data: payload).toDomain()))
             }
         }
     }
@@ -72,7 +73,7 @@ final class ProfileRepositoryImpl: ProfileRepository {
                     return
                 }
 
-                let profile = ProfileDTO(data: data).toDomain()
+                let profile = ProfileDTO(uid: request.uid, data: data).toDomain()
                 completion(.success(profile))
             }
     }

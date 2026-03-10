@@ -93,6 +93,7 @@ final class AppCoordinator {
     
     private func resolveAppSessionState(user: User?, completion: @escaping (AppSessionState) -> Void) {
         guard user != nil else {
+            ProfileSession.shared.clear()
             completion(.unauthenticated)
             return
         }
@@ -100,8 +101,16 @@ final class AppCoordinator {
         self.fetchProfileUseCase.execute { result in
             switch result {
             case .success(let profile):
-                completion(profile == nil ? .profileMissing : .authenticated)
+                guard let profile else {
+                    ProfileSession.shared.clear()
+                    completion(.profileMissing)
+                    return
+                }
+                
+                ProfileSession.shared.update(profile: profile)
+                completion(.authenticated)
             case .failure:
+                ProfileSession.shared.clear()
                 completion(.unauthenticated)
             }
         }
@@ -114,8 +123,11 @@ final class AppCoordinator {
     }
     
     private func makeSignInViewController() -> UIViewController {
-        let viewModel = SignInViewModel(createProfileUseCase: self.createProfileUseCase)
-        viewModel.onProfileCreated = { [weak self] in
+        let viewModel = SignInViewModel(
+            createProfileUseCase: self.createProfileUseCase,
+            fetchProfileUseCase: self.fetchProfileUseCase
+        )
+        viewModel.onSignInConfirmed = { [weak self] in
             self?.setRootViewController(for: .authenticated)
         }
         return UINavigationController(rootViewController: SignInViewController(viewModel: viewModel))
@@ -129,7 +141,8 @@ final class AppCoordinator {
         let signOutUseCase = SignOutUseCase(authRepository: self.authRepository)
         let viewModel = MainTabViewModel(
             signOutUseCase: signOutUseCase,
-            firestore: Firestore.firestore()
+            firestore: Firestore.firestore(),
+            uidProvider: ProfileSession.shared
         )
         return MainTabViewController(viewModel: viewModel)
     }

@@ -8,6 +8,7 @@
 import Foundation
 
 struct Profile {
+    let uid: String
     let username: String
     let createAt: Date
     let lastActiveAt: Date
