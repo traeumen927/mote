@@ -13,10 +13,11 @@ import FirebaseFirestore
 final class AppCoordinator {
     
     // MARK: Root -> Auth 있으면 main, 없으면 login 진입
-    private enum RootFlow {
-        case auth
-        case login
-        case main
+    private enum AppSessionState {
+        case resolving
+        case unauthenticated
+        case profileMissing
+        case authenticated
     }
     
     private weak var window: UIWindow?
@@ -24,7 +25,7 @@ final class AppCoordinator {
     private let googleAuthService: GoogleAuthServicing
     private let authRepository: AuthRepository
     private var authStateListenerHandle: AuthStateDidChangeListenerHandle?
-    private var currentRootFlow: RootFlow?
+    private var currentRootFlow: AppSessionState?
     
     init(
         window: UIWindow,
@@ -43,23 +44,15 @@ final class AppCoordinator {
     }
     
     func start() {
-        self.showAuthViewControllerIfNeeded()
+        self.setRootViewController(for: .resolving)
         self.startAuthStateListening()
-    }
-    
-    // MARK: Auth 응답 전 잠시 보여지는 뷰
-    private func showAuthViewControllerIfNeeded() {
-        guard self.currentRootFlow == nil else { return }
-        
-        self.window?.rootViewController = self.makeAuthViewController()
-        self.window?.makeKeyAndVisible()
-        self.currentRootFlow = .auth
     }
     
     // MARK: Auth Listener 실행
     private func startAuthStateListening() {
         self.authStateListenerHandle = self.authRepository.addAuthStateListener { [weak self] user in
-            self?.setRootViewController(isAuthenticated: user != nil)
+            let state = self?.resolveAppSessionState(user: user) ?? .resolving
+            self?.setRootViewController(for: state)
         }
     }
     
@@ -71,23 +64,43 @@ final class AppCoordinator {
     }
     
     // MARK: Root View Controller 결정
-    private func setRootViewController(isAuthenticated: Bool) {
-        let nextRootFlow: RootFlow = isAuthenticated ? .main : .login
-        guard self.currentRootFlow != nextRootFlow else { return }
+    private func setRootViewController(for state: AppSessionState) {
+        guard self.currentRootFlow != state else { return }
         
-        let nextRootViewController: UIViewController = isAuthenticated
-        ? self.makeMainViewController()
-        : self.makeLoginViewController()
+        let nextRootViewController: UIViewController
+        switch state {
+        case .resolving:
+            nextRootViewController = self.makeAuthViewController()
+        case .unauthenticated:
+            nextRootViewController = self.makeLoginViewController()
+        case .profileMissing:
+            nextRootViewController = self.makeSignInViewController()
+        case .authenticated:
+            nextRootViewController = self.makeMainViewController()
+        }
         
         self.window?.rootViewController = nextRootViewController
         self.window?.makeKeyAndVisible()
-        self.currentRootFlow = nextRootFlow
+        self.currentRootFlow = state
+    }
+    
+    private func resolveAppSessionState(user: User?) -> AppSessionState {
+        guard let user else { return .unauthenticated }
+        
+        let displayName = user.displayName?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let hasProfile = !(displayName?.isEmpty ?? true)
+        return hasProfile ? .authenticated : .profileMissing
     }
     
     private func makeLoginViewController() -> UIViewController {
         let signInWithGoogleUseCase = SignInWithGoogleUseCase(authRepository: self.authRepository)
         let viewModel = LoginViewModel(signInWithGoogleUseCase: signInWithGoogleUseCase)
         return LoginViewController(viewModel: viewModel, presenterStore: self.googleSignInPresenterStore)
+    }
+    
+    private func makeSignInViewController() -> UIViewController {
+        let viewModel = SignInViewModel()
+        return SignInViewController(viewModel: viewModel)
     }
     
     private func makeAuthViewController() -> UIViewController {
@@ -97,9 +110,9 @@ final class AppCoordinator {
     private func makeMainViewController() -> UIViewController {
         let signOutUseCase = SignOutUseCase(authRepository: self.authRepository)
         let viewModel = MainTabViewModel(
-                    signOutUseCase: signOutUseCase,
-                    firestore: Firestore.firestore()
-                )
+            signOutUseCase: signOutUseCase,
+            firestore: Firestore.firestore()
+        )
         return MainTabViewController(viewModel: viewModel)
     }
 }
