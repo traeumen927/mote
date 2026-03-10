@@ -25,6 +25,7 @@ final class AppCoordinator {
     private let googleAuthService: GoogleAuthServicing
     private let authRepository: AuthRepository
     private let fetchProfileUseCase: FetchProfileUseCase
+    private let createProfileUseCase: CreateProfileUseCase
     private var authStateListenerHandle: AuthStateDidChangeListenerHandle?
     private var currentRootFlow: AppSessionState?
     
@@ -41,6 +42,7 @@ final class AppCoordinator {
         
         let profileRepository = ProfileRepositoryImpl(firestore: Firestore.firestore())
         self.fetchProfileUseCase = FetchProfileUseCase(profileRepository: profileRepository)
+        self.createProfileUseCase = CreateProfileUseCase(profileRepository: profileRepository)
     }
     
     deinit {
@@ -112,11 +114,11 @@ final class AppCoordinator {
     }
     
     private func makeSignInViewController() -> UIViewController {
-        let viewModel = SignInViewModel()
+        let viewModel = SignInViewModel(createProfileUseCase: self.createProfileUseCase)
         viewModel.onProfileCreated = { [weak self] in
             self?.setRootViewController(for: .authenticated)
         }
-        return SignInViewController(viewModel: viewModel)
+        return UINavigationController(rootViewController: SignInViewController(viewModel: viewModel))
     }
     
     private func makeAuthViewController() -> UIViewController {

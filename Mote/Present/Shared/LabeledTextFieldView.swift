@@ -17,6 +17,7 @@ final class LabeledTextFieldView: UIView {
     }
     
     private let configuration: Configuration
+    private var isTextFieldFocused: Bool = false
     
     private let captionLabel: UILabel = {
         let label = UILabel()
@@ -49,6 +50,7 @@ final class LabeledTextFieldView: UIView {
         applyConfiguration()
         applyTheme()
         registerTraitChanges()
+        bindActions()
     }
     
     required init?(coder: NSCoder) {
@@ -59,14 +61,25 @@ final class LabeledTextFieldView: UIView {
         captionCountLabel?.text = text
     }
     
+    private func bindActions() {
+        captionTextField.addTarget(self, action: #selector(textFieldDidBeginEditing), for: .editingDidBegin)
+        captionTextField.addTarget(self, action: #selector(textFieldDidEndEditing), for: .editingDidEnd)
+    }
+    
     private func applyTheme() {
         captionLabel.textColor = SemanticColor.textSecondary.uiColor
         captionContainerView.backgroundColor = SemanticColor.bgApp.uiColor
         
+        let borderColor = isTextFieldFocused
+        ? SemanticColor.borderFocused.uiColor
+        : SemanticColor.borderDefault.uiColor
+        
         captionContainerView.layer.borderColor =
-        SemanticColor.borderDefault.uiColor
-            .resolvedColor(with: traitCollection)
-            .cgColor
+            borderColor
+                .resolvedColor(with: traitCollection)
+                .cgColor
+        
+        captionContainerView.layer.borderWidth = isTextFieldFocused ? 1.5 : 1.0
         
         captionTextField.textColor = SemanticColor.textPrimary.uiColor
         captionCountLabel?.textColor = SemanticColor.textDisabled.uiColor
@@ -76,6 +89,16 @@ final class LabeledTextFieldView: UIView {
         self.registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, _) in
             self.applyTheme()
         }
+    }
+    
+    @objc private func textFieldDidBeginEditing() {
+        isTextFieldFocused = true
+        applyTheme()
+    }
+    
+    @objc private func textFieldDidEndEditing() {
+        isTextFieldFocused = false
+        applyTheme()
     }
     
     private func setupLayout() {

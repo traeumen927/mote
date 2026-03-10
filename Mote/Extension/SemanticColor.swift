@@ -39,7 +39,7 @@ enum SemanticColor {
 
     // MARK: - Border
     case borderDefault
-    case borderStrong
+    case borderFocused
     case divider
     case borderAccent
     case borderDestructive
@@ -144,8 +144,8 @@ extension SemanticColor {
         case .borderDefault:
             return .palette(.R10)
 
-        case .borderStrong:
-            return .palette(.N40)
+        case .borderFocused:
+            return .palette(.R20)
 
         case .divider:
             return .palette(.N20)
