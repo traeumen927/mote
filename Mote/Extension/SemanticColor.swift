@@ -142,7 +142,7 @@ extension SemanticColor {
         // MARK: - Border
 
         case .borderDefault:
-            return .palette(.N30)
+            return .palette(.R10)
 
         case .borderStrong:
             return .palette(.N40)

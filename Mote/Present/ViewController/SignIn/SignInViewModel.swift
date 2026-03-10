@@ -8,5 +8,9 @@
 import Foundation
 
 final class SignInViewModel {
+    var onProfileCreated: (() -> Void)?
     
+    func didCreateProfile() {
+        self.onProfileCreated?()
+    }
 }

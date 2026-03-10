@@ -18,7 +18,7 @@ final class TodayViewModel {
     
     let items = EmotionItem.allCases
     
-    static let captionMaxLength = 20
+    private let captionMaxLength: Int
     
     let isLoading = BehaviorRelay<Bool>(value: false)
     let saveSucceeded = PublishRelay<SaveTodayEmotionUseCase.ResultData>()
@@ -27,7 +27,7 @@ final class TodayViewModel {
     let resetForNewDay = PublishRelay<Void>()
     
     private let canSaveRelay = BehaviorRelay<Bool>(value: false)
-    private let captionCountTextRelay = BehaviorRelay<String>(value: "(0/\(TodayViewModel.captionMaxLength))")
+    private let captionCountTextRelay = BehaviorRelay<String>(value: "")
     private let titleTextRelay = BehaviorRelay<String>(value: "")
     
     var canSave: Driver<Bool> {
@@ -40,6 +40,10 @@ final class TodayViewModel {
     
     var titleText: Driver<String> {
         self.titleTextRelay.asDriver()
+    }
+    
+    var configuredCaptionMaxLength: Int {
+        self.captionMaxLength
     }
     
     private var selectedIndex: Int?
@@ -57,13 +61,16 @@ final class TodayViewModel {
     init(
         saveTodayEmotionUseCase: SaveTodayEmotionUseCase,
         observeTodayEmotionUseCase: ObserveTodayEmotionUseCase,
-        calendar: Calendar = .current
+        calendar: Calendar = .current,
+        captionMaxLength: Int = 20
     ) {
         self.saveTodayEmotionUseCase = saveTodayEmotionUseCase
         self.observeTodayEmotionUseCase = observeTodayEmotionUseCase
         self.calendar = calendar
+        self.captionMaxLength = captionMaxLength
         self.activeDate = Date()
         self.titleTextRelay.accept(Self.formatTitle(self.activeDate, calendar: calendar))
+        self.syncCaptionCount()
     }
     
     deinit {
@@ -197,12 +204,17 @@ final class TodayViewModel {
     
     private func syncCaptionCount() {
         let currentCount = self.caption?.count ?? 0
-        self.captionCountTextRelay.accept("(\(currentCount)/\(Self.captionMaxLength))")
+        guard self.captionMaxLength > 0 else {
+            self.captionCountTextRelay.accept("")
+            return
+        }
+        self.captionCountTextRelay.accept("(\(currentCount)/\(self.captionMaxLength))")
     }
     
     private func sanitizedCaption(_ caption: String?) -> String? {
         guard let caption else { return nil }
-        return String(caption.prefix(Self.captionMaxLength))
+        guard self.captionMaxLength > 0 else { return caption }
+        return String(caption.prefix(self.captionMaxLength))
     }
     
     private func normalize(_ caption: String?) -> String? {

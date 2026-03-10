@@ -56,44 +56,14 @@ final class TodayViewController: UIViewController {
         return view
     }()
     
-    // MARK: 캡션 프롬프트 라벨
-    private let captionLabel: UILabel = {
-        let label = UILabel()
-        label.text = "Caption"
-        label.font = Typography.title2
-        label.textColor = SemanticColor.textSecondary.uiColor
-        label.numberOfLines = 1
-        return label
-    }()
-    
-    // MARK: 캡션 컨테이너 뷰
-    private let captionContainerView: UIView = {
-        let view = UIView()
-        view.backgroundColor = SemanticColor.bgApp.uiColor
-        view.layer.cornerRadius = 12
-        view.layer.borderWidth = 1.0
-        view.layer.borderColor = SemanticColor.borderDefault.uiColor.cgColor
-        return view
-    }()
-    
-    // MARK: 캡션 타이틀 뷰
-    private let captionTextField: UITextField = {
-        let textField = UITextField()
-        textField.font = Typography.body
-        textField.textColor = SemanticColor.textPrimary.uiColor
-        textField.placeholder = "A few words about today…"
-        textField.returnKeyType = .done
-        return textField
-    }()
-    
-    // MARK: 캡션 글자수 라벨
-    private let captionCountLabel: UILabel = {
-        let label = UILabel()
-        label.font = Typography.caption
-        label.textColor = SemanticColor.textDisabled.uiColor
-        label.textAlignment = .right
-        label.text = "(0/\(TodayViewModel.captionMaxLength))"
-        return label
+    // MARK: 캡션 입력 컴포넌트
+    private lazy var captionInputView: LabeledTextFieldView = {
+        let configuration = LabeledTextFieldView.Configuration(
+            title: "Caption",
+            placeholder: "A few words about today…",
+            maxLength: self.viewModel.configuredCaptionMaxLength
+        )
+        return LabeledTextFieldView(configuration: configuration)
     }()
     
     init(viewModel: TodayViewModel) {
@@ -129,11 +99,8 @@ final class TodayViewController: UIViewController {
         self.view.addSubview(self.emotionLabel)
         self.view.addSubview(self.collectionView)
         
-        self.view.addSubview(self.captionLabel)
-        self.view.addSubview(self.captionContainerView)
-        self.captionContainerView.addSubview(self.captionTextField)
-        self.captionContainerView.addSubview(self.captionCountLabel)
-        self.captionContainerView.isHidden = true
+        self.view.addSubview(self.captionInputView)
+        self.captionInputView.isHidden = true
         
         self.emotionLabel.snp.makeConstraints { make in
             make.top.equalTo(self.view.safeAreaLayoutGuide).offset(20)
@@ -147,25 +114,9 @@ final class TodayViewController: UIViewController {
             self.emotionContainerHeightConstraint = make.height.equalTo(0).constraint
         }
         
-        self.captionLabel.snp.makeConstraints { make in
+        self.captionInputView.snp.makeConstraints { make in
             make.top.equalTo(self.collectionView.snp.bottom).offset(16)
             make.horizontalEdges.equalToSuperview().inset(20)
-        }
-        
-        self.captionContainerView.snp.makeConstraints { make in
-            make.top.equalTo(self.captionLabel.snp.bottom).offset(12)
-            make.horizontalEdges.equalToSuperview().inset(20)
-        }
-        
-        self.captionTextField.snp.makeConstraints { make in
-            make.leading.equalToSuperview().inset(8)
-            make.verticalEdges.equalToSuperview().inset(8)
-            make.trailing.equalTo(self.captionCountLabel.snp.leading).offset(-8)
-        }
-        
-        self.captionCountLabel.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().inset(8)
-            make.centerY.equalTo(self.captionTextField)
         }
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard))
@@ -190,7 +141,7 @@ final class TodayViewController: UIViewController {
             .disposed(by: self.disposeBag)
         
         // MARK: ReturnKey로 저장
-        self.captionTextField.rx.controlEvent(.editingDidEndOnExit)
+        self.captionInputView.captionTextField.rx.controlEvent(.editingDidEndOnExit)
             .bind { [weak self] in
                 self?.viewModel.saveTodayEmotion()
             }
@@ -200,17 +151,17 @@ final class TodayViewController: UIViewController {
         self.collectionView.rx.itemSelected
             .bind { [weak self] indexPath in
                 guard let self else { return }
-                self.captionContainerView.isHidden = false
+                self.captionInputView.isHidden = false
                 self.viewModel.selectEmotion(at: indexPath.item)
             }
             .disposed(by: self.disposeBag)
         
-        self.captionTextField.rx.text
+        self.captionInputView.captionTextField.rx.text
             .bind { [weak self] text in
                 guard let self else { return }
                 let sanitizedCaption = self.viewModel.updateCaption(text)
-                if self.captionTextField.text != sanitizedCaption {
-                    self.captionTextField.text = sanitizedCaption
+                if self.captionInputView.captionTextField.text != sanitizedCaption {
+                    self.captionInputView.captionTextField.text = sanitizedCaption
                 }
             }
             .disposed(by: self.disposeBag)
@@ -220,8 +171,8 @@ final class TodayViewController: UIViewController {
                 guard let self else { return }
                 let indexPath = IndexPath(item: state.selectedIndex, section: 0)
                 self.collectionView.selectItem(at: indexPath, animated: false, scrollPosition: [])
-                self.captionTextField.text = state.caption
-                self.captionContainerView.isHidden = false
+                self.captionInputView.captionTextField.text = state.caption
+                self.captionInputView.isHidden = false
             }
             .disposed(by: self.disposeBag)
         
@@ -231,9 +182,9 @@ final class TodayViewController: UIViewController {
                 self.collectionView.indexPathsForSelectedItems?.forEach { indexPath in
                     self.collectionView.deselectItem(at: indexPath, animated: false)
                 }
-                self.captionTextField.text = nil
-                self.captionContainerView.isHidden = true
-                self.captionTextField.resignFirstResponder()
+                self.captionInputView.captionTextField.text = nil
+                self.captionInputView.isHidden = true
+                self.captionInputView.captionTextField.resignFirstResponder()
             }
             .disposed(by: self.disposeBag)
         
@@ -242,7 +193,9 @@ final class TodayViewController: UIViewController {
             .disposed(by: self.disposeBag)
         
         self.viewModel.captionCountText
-            .drive(self.captionCountLabel.rx.text)
+            .drive(onNext: { [weak self] text in
+                self?.captionInputView.updateCountText(text)
+            })
             .disposed(by: self.disposeBag)
         
         self.viewModel.isLoading
@@ -252,7 +205,7 @@ final class TodayViewController: UIViewController {
         
         self.viewModel.saveSucceeded
             .bind { [weak self] data in
-                self?.captionTextField.resignFirstResponder()
+                self?.captionInputView.captionTextField.resignFirstResponder()
                 print("✅ Saved emotion: \(data.emotion), dateKey: \(data.dateKey)")
             }
             .disposed(by: self.disposeBag)

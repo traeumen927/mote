@@ -24,6 +24,7 @@ final class AppCoordinator {
     private let googleSignInPresenterStore: GoogleSignInPresenterStoreType
     private let googleAuthService: GoogleAuthServicing
     private let authRepository: AuthRepository
+    private let fetchProfileUseCase: FetchProfileUseCase
     private var authStateListenerHandle: AuthStateDidChangeListenerHandle?
     private var currentRootFlow: AppSessionState?
     
@@ -37,6 +38,9 @@ final class AppCoordinator {
         let googleAuthService = googleAuthService ?? GoogleAuthService(presenterStore: googleSignInPresenterStore)
         self.googleAuthService = googleAuthService
         self.authRepository = AuthRepositoryImpl(googleAuthService: googleAuthService)
+        
+        let profileRepository = ProfileRepositoryImpl(firestore: Firestore.firestore())
+        self.fetchProfileUseCase = FetchProfileUseCase(profileRepository: profileRepository)
     }
     
     deinit {
@@ -51,8 +55,9 @@ final class AppCoordinator {
     // MARK: Auth Listener 실행
     private func startAuthStateListening() {
         self.authStateListenerHandle = self.authRepository.addAuthStateListener { [weak self] user in
-            let state = self?.resolveAppSessionState(user: user) ?? .resolving
-            self?.setRootViewController(for: state)
+            self?.resolveAppSessionState(user: user) { state in
+                self?.setRootViewController(for: state)
+            }
         }
     }
     
@@ -84,12 +89,20 @@ final class AppCoordinator {
         self.currentRootFlow = state
     }
     
-    private func resolveAppSessionState(user: User?) -> AppSessionState {
-        guard let user else { return .unauthenticated }
+    private func resolveAppSessionState(user: User?, completion: @escaping (AppSessionState) -> Void) {
+        guard user != nil else {
+            completion(.unauthenticated)
+            return
+        }
         
-        let displayName = user.displayName?.trimmingCharacters(in: .whitespacesAndNewlines)
-        let hasProfile = !(displayName?.isEmpty ?? true)
-        return hasProfile ? .authenticated : .profileMissing
+        self.fetchProfileUseCase.execute { result in
+            switch result {
+            case .success(let profile):
+                completion(profile == nil ? .profileMissing : .authenticated)
+            case .failure:
+                completion(.unauthenticated)
+            }
+        }
     }
     
     private func makeLoginViewController() -> UIViewController {
@@ -100,6 +113,9 @@ final class AppCoordinator {
     
     private func makeSignInViewController() -> UIViewController {
         let viewModel = SignInViewModel()
+        viewModel.onProfileCreated = { [weak self] in
+            self?.setRootViewController(for: .authenticated)
+        }
         return SignInViewController(viewModel: viewModel)
     }
     
