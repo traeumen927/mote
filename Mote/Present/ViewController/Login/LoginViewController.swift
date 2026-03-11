@@ -62,7 +62,7 @@ final class LoginViewController: UIViewController {
         self.view.addSubview(self.googleLoginButton)
         
         self.titleLabel.snp.makeConstraints { make in
-            make.top.equalTo(self.view.safeAreaLayoutGuide).offset(32)
+            make.top.equalTo(self.view.safeAreaLayoutGuide).offset(16)
             make.leading.trailing.equalToSuperview().inset(16)
         }
         

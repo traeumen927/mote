@@ -119,16 +119,27 @@ final class AppCoordinator {
     private func makeLoginViewController() -> UIViewController {
         let signInWithGoogleUseCase = SignInWithGoogleUseCase(authRepository: self.authRepository)
         let viewModel = LoginViewModel(signInWithGoogleUseCase: signInWithGoogleUseCase)
-        return LoginViewController(viewModel: viewModel, presenterStore: self.googleSignInPresenterStore)
+        let viewControlelr = LoginViewController(viewModel: viewModel, presenterStore: self.googleSignInPresenterStore)
+        return UINavigationController(rootViewController: viewControlelr)
     }
     
     private func makeSignInViewController() -> UIViewController {
+        let signOutUseCase = SignOutUseCase(authRepository: self.authRepository)
         let viewModel = SignInViewModel(
             createProfileUseCase: self.createProfileUseCase,
-            fetchProfileUseCase: self.fetchProfileUseCase
+            fetchProfileUseCase: self.fetchProfileUseCase,
+            signOutUseCase: signOutUseCase
         )
-        viewModel.onSignInConfirmed = { [weak self] in
-            self?.setRootViewController(for: .authenticated)
+        let signInViewController = SignInViewController(viewModel: viewModel)
+        let navigationController = UINavigationController(rootViewController: signInViewController)
+        
+        viewModel.onProfileCreated = { [weak self, weak navigationController] username in
+            let welcomeViewModel = WelcomeViewModel(username: username)
+            welcomeViewModel.onConfirm = { [weak self] in
+                self?.setRootViewController(for: .authenticated)
+            }
+            let welcomeViewController = WelcomeViewController(viewModel: welcomeViewModel)
+            navigationController?.pushViewController(welcomeViewController, animated: true)
         }
         return UINavigationController(rootViewController: SignInViewController(viewModel: viewModel))
     }

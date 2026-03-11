@@ -15,33 +15,33 @@ final class SignInViewModel {
     private let createProfileUseCase: CreateProfileUseCase
     
     private let fetchProfileUseCase: FetchProfileUseCase
+    private let signOutUseCase: SignOutUseCase
     
-    var onSignInConfirmed: (() -> Void)?
+    var onProfileCreated: ((String) -> Void)?
     
     let username = BehaviorRelay<String>(value: "")
     let createRequested = PublishRelay<Void>()
-    let confirmRequested = PublishRelay<Void>()
+    let closeRequested = PublishRelay<Void>()
     let isLoading = BehaviorRelay<Bool>(value: false)
-    let isCompleted = BehaviorRelay<Bool>(value: false)
-    let completedUsername = PublishRelay<String>()
     let createFailed = PublishRelay<Error>()
     
     lazy var canCreate: Driver<Bool> = Driver
         .combineLatest(
             self.username.asDriver(),
-            self.isLoading.asDriver(),
-            self.isCompleted.asDriver()
-        ) { username, isLoading, isCompleted in
+            self.isLoading.asDriver()
+        ) { username, isLoading in
             let normalizedUsername = username.trimmingCharacters(in: .whitespacesAndNewlines)
-            return normalizedUsername.isEmpty == false && isLoading == false && isCompleted == false
+            return normalizedUsername.isEmpty == false && isLoading == false
         }
     
     init(
         createProfileUseCase: CreateProfileUseCase,
-        fetchProfileUseCase: FetchProfileUseCase
+        fetchProfileUseCase: FetchProfileUseCase,
+        signOutUseCase: SignOutUseCase
     ) {
         self.createProfileUseCase = createProfileUseCase
         self.fetchProfileUseCase = fetchProfileUseCase
+        self.signOutUseCase = signOutUseCase
         self.bind()
     }
     
@@ -49,13 +49,12 @@ final class SignInViewModel {
         self.createRequested
             .withLatestFrom(Observable.combineLatest(
                 self.username.asObservable(),
-                self.isLoading.asObservable(),
-                self.isCompleted.asObservable()
+                self.isLoading.asObservable()
             ))
-            .filter { _, isLoading, isCompleted in
-                isLoading == false && isCompleted == false
+            .filter { _, isLoading in
+                isLoading == false
             }
-            .map { username, _, _ in
+            .map { username, _ in
                 username.trimmingCharacters(in: .whitespacesAndNewlines)
             }
             .filter { username in
@@ -66,13 +65,19 @@ final class SignInViewModel {
             }
             .disposed(by: self.disposeBag)
         
-        self.confirmRequested
-            .withLatestFrom(self.isCompleted.asObservable())
-            .filter { $0 }
+        self.closeRequested
             .bind { [weak self] _ in
-                self?.onSignInConfirmed?()
+                self?.signOut()
             }
             .disposed(by: self.disposeBag)
+    }
+    
+    private func signOut() {
+        do {
+            try self.signOutUseCase.execute()
+        } catch {
+            self.createFailed.accept(error)
+        }
     }
     
     private func createAndFetchProfile(username: String) {
@@ -86,7 +91,6 @@ final class SignInViewModel {
                     self.fetchProfileAfterCreate(username: username)
                 case .failure(let error):
                     self.isLoading.accept(false)
-                    self.isCompleted.accept(false)
                     self.createFailed.accept(error)
                 }
             }
@@ -101,17 +105,14 @@ final class SignInViewModel {
                 switch result {
                 case .success(let profile):
                     guard let profile else {
-                        self.isCompleted.accept(false)
                         self.createFailed.accept(SignInFlowError.missingProfile)
                         return
                     }
                     
                     let completedUsername = profile.username.isEmpty ? username : profile.username
                     ProfileSession.shared.update(profile: profile)
-                    self.isCompleted.accept(true)
-                    self.completedUsername.accept(completedUsername)
+                    self.onProfileCreated?(completedUsername)
                 case .failure(let error):
-                    self.isCompleted.accept(false)
                     self.createFailed.accept(error)
                 }
             }
