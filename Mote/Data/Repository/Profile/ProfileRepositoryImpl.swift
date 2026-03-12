@@ -10,11 +10,11 @@ import FirebaseFirestore
 
 final class ProfileRepositoryImpl: ProfileRepository {
     private let firestore: Firestore
-
+    
     init(firestore: Firestore = .firestore()) {
         self.firestore = firestore
     }
-
+    
     func createProfile(
         request: CreateProfileRequest,
         completion: @escaping (Result<Profile, Error>) -> Void
@@ -24,35 +24,35 @@ final class ProfileRepositoryImpl: ProfileRepository {
             .document(request.uid)
             .collection("profile")
             .document("current")
-
+        
         documentRef.getDocument { snapshot, error in
             if let error {
                 completion(.failure(error))
                 return
             }
-
+            
             let existingCreateAt = (snapshot?.data()?["createAt"] as? Timestamp)?.dateValue()
             let createAt = existingCreateAt ?? request.date
             let lastActiveAt = request.date
-
+            
             let payload: [String: Any] = [
                 "uid": request.uid,
                 "username": request.username,
                 "createAt": createAt,
                 "lastActiveAt": lastActiveAt
             ]
-
+            
             documentRef.setData(payload, merge: true) { error in
                 if let error {
                     completion(.failure(error))
                     return
                 }
-
+                
                 completion(.success(ProfileDTO(uid: request.uid, data: payload).toDomain()))
             }
         }
     }
-
+    
     func fetchProfile(
         request: FetchProfileRequest,
         completion: @escaping (Result<Profile?, Error>) -> Void
@@ -67,14 +67,33 @@ final class ProfileRepositoryImpl: ProfileRepository {
                     completion(.failure(error))
                     return
                 }
-
+                
                 guard let snapshot, snapshot.exists, let data = snapshot.data() else {
                     completion(.success(nil))
                     return
                 }
-
+                
                 let profile = ProfileDTO(uid: request.uid, data: data).toDomain()
                 completion(.success(profile))
+            }
+    }
+    
+    func isUsernameDuplicated(
+        request: CheckUsernameDuplicateRequest,
+        completion: @escaping (Result<Bool, Error>) -> Void
+    ) {
+        self.firestore
+            .collectionGroup("profile")
+            .whereField("username", isEqualTo: request.username)
+            .limit(to: 1)
+            .getDocuments { snapshot, error in
+                if let error {
+                    completion(.failure(error))
+                    return
+                }
+                
+                let isDuplicated = (snapshot?.documents.isEmpty == false)
+                completion(.success(isDuplicated))
             }
     }
 }

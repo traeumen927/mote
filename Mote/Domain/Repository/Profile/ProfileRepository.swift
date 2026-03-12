@@ -17,4 +17,9 @@ protocol ProfileRepository {
         request: FetchProfileRequest,
         completion: @escaping (Result<Profile?, Error>) -> Void
     )
+    
+    func isUsernameDuplicated(
+        request: CheckUsernameDuplicateRequest,
+        completion: @escaping (Result<Bool, Error>) -> Void
+    )
 }
