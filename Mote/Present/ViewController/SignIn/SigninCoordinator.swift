@@ -9,6 +9,7 @@ import UIKit
 
 final class SignInCoordinator {
     private let createProfileUseCase: CreateProfileUseCase
+    private let checkUsernameDuplicateUseCase: CheckUsernameDuplicateUseCase
     private let fetchProfileUseCase: FetchProfileUseCase
     private let signOutUseCase: SignOutUseCase
 
@@ -16,10 +17,12 @@ final class SignInCoordinator {
 
     init(
         createProfileUseCase: CreateProfileUseCase,
+        checkUsernameDuplicateUseCase: CheckUsernameDuplicateUseCase,
         fetchProfileUseCase: FetchProfileUseCase,
         signOutUseCase: SignOutUseCase
     ) {
         self.createProfileUseCase = createProfileUseCase
+        self.checkUsernameDuplicateUseCase = checkUsernameDuplicateUseCase
         self.fetchProfileUseCase = fetchProfileUseCase
         self.signOutUseCase = signOutUseCase
     }
@@ -27,6 +30,7 @@ final class SignInCoordinator {
     func start() -> UIViewController {
         let viewModel = SignInViewModel(
             createProfileUseCase: self.createProfileUseCase,
+            checkUsernameDuplicateUseCase: self.checkUsernameDuplicateUseCase,
             fetchProfileUseCase: self.fetchProfileUseCase,
             signOutUseCase: self.signOutUseCase
         )

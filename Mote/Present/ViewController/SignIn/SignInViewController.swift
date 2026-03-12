@@ -115,6 +115,13 @@ final class SignInViewController: UIViewController {
             .drive(self.doneBarButtonItem.rx.isEnabled)
             .disposed(by: self.disposeBag)
         
+        self.viewModel.usernameAvailabilityState
+            .observe(on: MainScheduler.instance)
+            .bind { [weak self] state in
+                
+            }
+            .disposed(by: self.disposeBag)
+        
         self.viewModel.isLoading
             .map { !$0 }
             .bind(to: self.userNameInputView.captionTextField.rx.isEnabled)

@@ -24,8 +24,8 @@ final class AppCoordinator {
     private let googleSignInPresenterStore: GoogleSignInPresenterStoreType
     private let googleAuthService: GoogleAuthServicing
     private let authRepository: AuthRepository
-    private let fetchProfileUseCase: FetchProfileUseCase
-    private let createProfileUseCase: CreateProfileUseCase
+    private let profileRepository: ProfileRepository
+
     private var authStateListenerHandle: AuthStateDidChangeListenerHandle?
     private var currentRootFlow: AppSessionState?
     
@@ -43,8 +43,7 @@ final class AppCoordinator {
         self.authRepository = AuthRepositoryImpl(googleAuthService: googleAuthService)
         
         let profileRepository = ProfileRepositoryImpl(firestore: Firestore.firestore())
-        self.fetchProfileUseCase = FetchProfileUseCase(profileRepository: profileRepository)
-        self.createProfileUseCase = CreateProfileUseCase(profileRepository: profileRepository)
+        self.profileRepository = profileRepository
     }
     
     deinit {
@@ -104,7 +103,9 @@ final class AppCoordinator {
             return
         }
         
-        self.fetchProfileUseCase.execute { result in
+        let fetchProfileUseCase = FetchProfileUseCase(profileRepository: self.profileRepository)
+        
+        fetchProfileUseCase.execute { result in
             switch result {
             case .success(let profile):
                 guard let profile else {
@@ -130,10 +131,16 @@ final class AppCoordinator {
     }
     
     private func makeSignInViewController() -> UIViewController {
+        
         let signOutUseCase = SignOutUseCase(authRepository: self.authRepository)
+        let fetchProfileUseCase = FetchProfileUseCase(profileRepository: self.profileRepository)
+        let createProfileUseCase = CreateProfileUseCase(profileRepository: self.profileRepository)
+        let checkUsernameDuplicateUseCase = CheckUsernameDuplicateUseCase(profileRepository: self.profileRepository)
+        
         let coordinator = SignInCoordinator(
-            createProfileUseCase: self.createProfileUseCase,
-            fetchProfileUseCase: self.fetchProfileUseCase,
+            createProfileUseCase: createProfileUseCase,
+            checkUsernameDuplicateUseCase: checkUsernameDuplicateUseCase,
+            fetchProfileUseCase: fetchProfileUseCase,
             signOutUseCase: signOutUseCase
         )
         

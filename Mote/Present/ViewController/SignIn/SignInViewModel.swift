@@ -12,10 +12,27 @@ import RxCocoa
 final class SignInViewModel {
     
     private let disposeBag = DisposeBag()
-    private let createProfileUseCase: CreateProfileUseCase
     
+    private let createProfileUseCase: CreateProfileUseCase
+    private let checkUsernameDuplicateUseCase: CheckUsernameDuplicateUseCase
     private let fetchProfileUseCase: FetchProfileUseCase
     private let signOutUseCase: SignOutUseCase
+    
+    private typealias CreateAvailabilityContext = (
+        username: String,
+        availability: UsernameAvailabilityState,
+        isLoading: Bool
+    )
+    
+    enum UsernameAvailabilityState: Equatable {
+        case idle
+        case invalidFormat
+        case checking
+        case available
+        case taken
+    }
+    
+    private static let usernamePattern = "^[a-z0-9._]{3,15}$"
     
     var onProfileCreated: ((Profile) -> Void)?
     
@@ -24,41 +41,55 @@ final class SignInViewModel {
     let closeRequested = PublishRelay<Void>()
     let isLoading = BehaviorRelay<Bool>(value: false)
     let createFailed = PublishRelay<Error>()
+    let usernameAvailabilityState = BehaviorRelay<UsernameAvailabilityState>(value: .idle)
     
     lazy var canCreate: Driver<Bool> = Driver
         .combineLatest(
-            self.username.asDriver(),
+            self.usernameAvailabilityState.asDriver(),
             self.isLoading.asDriver()
-        ) { username, isLoading in
-            let normalizedUsername = username.trimmingCharacters(in: .whitespacesAndNewlines)
-            return normalizedUsername.isEmpty == false && isLoading == false
+        ) { availability, isLoading in
+            availability == .available && isLoading == false
         }
     
     init(
         createProfileUseCase: CreateProfileUseCase,
+        checkUsernameDuplicateUseCase: CheckUsernameDuplicateUseCase,
         fetchProfileUseCase: FetchProfileUseCase,
         signOutUseCase: SignOutUseCase
     ) {
         self.createProfileUseCase = createProfileUseCase
+        self.checkUsernameDuplicateUseCase = checkUsernameDuplicateUseCase
         self.fetchProfileUseCase = fetchProfileUseCase
         self.signOutUseCase = signOutUseCase
         self.bind()
     }
     
     private func bind() {
-        self.createRequested
-            .withLatestFrom(Observable.combineLatest(
+        self.bindUsernameValidation()
+        
+        self.bindUsernameValidation()
+        
+        let createAvailabilityContext = Observable
+            .combineLatest(
                 self.username.asObservable(),
+                self.usernameAvailabilityState.asObservable(),
                 self.isLoading.asObservable()
-            ))
-            .filter { _, isLoading in
-                isLoading == false
+            )
+            .map { username, availability, isLoading -> CreateAvailabilityContext in
+                (
+                    username: username,
+                    availability: availability,
+                    isLoading: isLoading
+                )
             }
-            .map { username, _ in
-                username.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        self.createRequested
+            .withLatestFrom(createAvailabilityContext)
+            .filter { context in
+                context.availability == .available && context.isLoading == false
             }
-            .filter { username in
-                username.isEmpty == false
+            .map { context in
+                context.username.trimmingCharacters(in: .whitespacesAndNewlines)
             }
             .bind { [weak self] username in
                 self?.createAndFetchProfile(username: username)
@@ -70,6 +101,65 @@ final class SignInViewModel {
                 self?.signOut()
             }
             .disposed(by: self.disposeBag)
+    }
+    
+    private func bindUsernameValidation() {
+        let normalizedUsername = self.username
+            .asObservable()
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .distinctUntilChanged()
+            .share(replay: 1, scope: .whileConnected)
+        
+        normalizedUsername
+            .observe(on: MainScheduler.instance)
+            .bind { [weak self] username in
+                guard let self else { return }
+                
+                if username.isEmpty {
+                    self.usernameAvailabilityState.accept(.idle)
+                    return
+                }
+                
+                if Self.isValidUsername(username) {
+                    self.usernameAvailabilityState.accept(.checking)
+                } else {
+                    self.usernameAvailabilityState.accept(.invalidFormat)
+                }
+            }
+            .disposed(by: self.disposeBag)
+        
+        normalizedUsername
+            .debounce(.milliseconds(500), scheduler: MainScheduler.instance)
+            .filter { Self.isValidUsername($0) }
+            .flatMapLatest { [weak self] username -> Observable<UsernameAvailabilityState> in
+                guard let self else { return .empty() }
+                return self.checkUsernameDuplicate(username: username)
+            }
+            .observe(on: MainScheduler.instance)
+            .bind(to: self.usernameAvailabilityState)
+            .disposed(by: self.disposeBag)
+    }
+    
+    private func checkUsernameDuplicate(username: String) -> Observable<UsernameAvailabilityState> {
+        Observable.create { [weak self] observer in
+            self?.checkUsernameDuplicateUseCase.execute(username: username) { result in
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success(let isDuplicated):
+                        observer.onNext(isDuplicated ? .taken : .available)
+                    case .failure:
+                        observer.onNext(.taken)
+                    }
+                    observer.onCompleted()
+                }
+            }
+            
+            return Disposables.create()
+        }
+    }
+    
+    static func isValidUsername(_ username: String) -> Bool {
+        username.range(of: Self.usernamePattern, options: .regularExpression) != nil
     }
     
     private func signOut() {
