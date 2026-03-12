@@ -29,6 +29,8 @@ final class AppCoordinator {
     private var authStateListenerHandle: AuthStateDidChangeListenerHandle?
     private var currentRootFlow: AppSessionState?
     
+    private var signInCoordinator: SignInCoordinator?
+    
     init(
         window: UIWindow,
         googleSignInPresenterStore: GoogleSignInPresenterStoreType = GoogleSignInPresenterStore(),
@@ -89,6 +91,10 @@ final class AppCoordinator {
         self.window?.rootViewController = nextRootViewController
         self.window?.makeKeyAndVisible()
         self.currentRootFlow = state
+        
+        if state != .profileMissing {
+                    self.signInCoordinator = nil
+                }
     }
     
     private func resolveAppSessionState(user: User?, completion: @escaping (AppSessionState) -> Void) {
@@ -125,23 +131,18 @@ final class AppCoordinator {
     
     private func makeSignInViewController() -> UIViewController {
         let signOutUseCase = SignOutUseCase(authRepository: self.authRepository)
-        let viewModel = SignInViewModel(
+        let coordinator = SignInCoordinator(
             createProfileUseCase: self.createProfileUseCase,
             fetchProfileUseCase: self.fetchProfileUseCase,
             signOutUseCase: signOutUseCase
         )
-        let signInViewController = SignInViewController(viewModel: viewModel)
-        let navigationController = UINavigationController(rootViewController: signInViewController)
         
-        viewModel.onProfileCreated = { [weak self, weak navigationController] username in
-            let welcomeViewModel = WelcomeViewModel(username: username)
-            welcomeViewModel.onConfirm = { [weak self] in
-                self?.setRootViewController(for: .authenticated)
-            }
-            let welcomeViewController = WelcomeViewController(viewModel: welcomeViewModel)
-            navigationController?.pushViewController(welcomeViewController, animated: true)
+        coordinator.onSignInFlowCompleted = { [weak self] in
+                    self?.setRootViewController(for: .authenticated)
         }
-        return UINavigationController(rootViewController: SignInViewController(viewModel: viewModel))
+        
+        self.signInCoordinator = coordinator
+        return coordinator.start()
     }
     
     private func makeAuthViewController() -> UIViewController {

@@ -12,13 +12,18 @@ import RxCocoa
 final class WelcomeViewModel {
     private let disposeBag = DisposeBag()
     
-    let welcomeMessage: String
+    let profile: Profile
+    
+    var welcomeMessage: String {
+        "Congratulations on joining, \(self.profile.username)."
+    }
+    
     let confirmRequested = PublishRelay<Void>()
     
     var onConfirm: (() -> Void)?
     
-    init(username: String) {
-        self.welcomeMessage = "Congratulations on joining, \(username)."
+    init(profile: Profile) {
+        self.profile = profile
         self.bind()
     }
     

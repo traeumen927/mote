@@ -17,7 +17,7 @@ final class SignInViewModel {
     private let fetchProfileUseCase: FetchProfileUseCase
     private let signOutUseCase: SignOutUseCase
     
-    var onProfileCreated: ((String) -> Void)?
+    var onProfileCreated: ((Profile) -> Void)?
     
     let username = BehaviorRelay<String>(value: "")
     let createRequested = PublishRelay<Void>()
@@ -109,9 +109,17 @@ final class SignInViewModel {
                         return
                     }
                     
-                    let completedUsername = profile.username.isEmpty ? username : profile.username
-                    ProfileSession.shared.update(profile: profile)
-                    self.onProfileCreated?(completedUsername)
+                    let completedProfile = profile.username.isEmpty
+                    ? Profile(
+                        uid: profile.uid,
+                        username: username,
+                        createAt: profile.createAt,
+                        lastActiveAt: profile.lastActiveAt
+                    )
+                    : profile
+                    
+                    ProfileSession.shared.update(profile: completedProfile)
+                    self.onProfileCreated?(completedProfile)
                 case .failure(let error):
                     self.createFailed.accept(error)
                 }
