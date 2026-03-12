@@ -108,6 +108,10 @@ final class SignInViewController: UIViewController {
             make.top.equalTo(self.userNameInputView.snp.bottom).offset(12)
             make.leading.equalToSuperview().offset(20)
         }
+        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard))
+        tapGesture.cancelsTouchesInView = false
+        self.view.addGestureRecognizer(tapGesture)
     }
     
     private func bind() {
@@ -163,6 +167,11 @@ final class SignInViewController: UIViewController {
                 print("❌ Failed to create profile: \(error.localizedDescription)")
             }
             .disposed(by: self.disposeBag)
+    }
+    
+    @objc
+    private func dismissKeyboard() {
+        self.view.endEditing(true)
     }
     
     private func renderUsernameAvailability(state: SignInViewModel.UsernameAvailabilityState) {

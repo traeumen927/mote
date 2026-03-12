@@ -67,8 +67,6 @@ final class SignInViewModel {
     private func bind() {
         self.bindUsernameValidation()
         
-        self.bindUsernameValidation()
-        
         let createAvailabilityContext = Observable
             .combineLatest(
                 self.username.asObservable(),

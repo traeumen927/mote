@@ -64,6 +64,7 @@ final class LabeledTextFieldView: UIView {
     private func bindActions() {
         captionTextField.addTarget(self, action: #selector(textFieldDidBeginEditing), for: .editingDidBegin)
         captionTextField.addTarget(self, action: #selector(textFieldDidEndEditing), for: .editingDidEnd)
+        captionTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
     }
     
     private func applyTheme() {
@@ -101,6 +102,19 @@ final class LabeledTextFieldView: UIView {
         applyTheme()
     }
     
+    @objc private func textFieldDidChange() {
+        guard configuration.maxLength > 0 else { return }
+
+        let text = captionTextField.text ?? ""
+        let limitedText = String(text.prefix(configuration.maxLength))
+
+        if text != limitedText {
+            captionTextField.text = limitedText
+        }
+
+        captionCountLabel?.text = "(\(limitedText.count)/\(configuration.maxLength))"
+    }
+    
     private func setupLayout() {
         addSubview(captionLabel)
         addSubview(captionContainerView)
@@ -113,6 +127,7 @@ final class LabeledTextFieldView: UIView {
         captionContainerView.snp.makeConstraints {
             $0.top.equalTo(captionLabel.snp.bottom).offset(12)
             $0.horizontalEdges.bottom.equalToSuperview()
+            $0.height.equalTo(44)
         }
         
         if configuration.maxLength > 0 {
