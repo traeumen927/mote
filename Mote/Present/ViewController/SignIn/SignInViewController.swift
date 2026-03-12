@@ -59,6 +59,16 @@ final class SignInViewController: UIViewController {
         return LabeledTextFieldView(configuration: configuration)
     }()
     
+    // MARK: 중복 체크, 정규식 안내 라벨
+    private lazy var validationLabel: UILabel = {
+        let label = UILabel()
+        label.font = Typography.body
+        label.textColor = SemanticColor.textSecondary.uiColor
+        label.textAlignment = .center
+        return label
+    }()
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -82,6 +92,7 @@ final class SignInViewController: UIViewController {
         
         self.view.addSubview(self.titleLabel)
         self.view.addSubview(self.userNameInputView)
+        self.view.addSubview(self.validationLabel)
         
         self.titleLabel.snp.makeConstraints { make in
             make.top.equalTo(self.view.safeAreaLayoutGuide).offset(16)
@@ -91,6 +102,11 @@ final class SignInViewController: UIViewController {
         self.userNameInputView.snp.makeConstraints { make in
             make.top.equalTo(self.titleLabel.snp.bottom).offset(72)
             make.horizontalEdges.equalToSuperview().inset(20)
+        }
+        
+        self.validationLabel.snp.makeConstraints { make in
+            make.top.equalTo(self.userNameInputView.snp.bottom).offset(12)
+            make.leading.equalToSuperview().offset(20)
         }
     }
     
@@ -118,7 +134,7 @@ final class SignInViewController: UIViewController {
         self.viewModel.usernameAvailabilityState
             .observe(on: MainScheduler.instance)
             .bind { [weak self] state in
-                
+                self?.renderUsernameAvailability(state: state)
             }
             .disposed(by: self.disposeBag)
         
@@ -147,5 +163,25 @@ final class SignInViewController: UIViewController {
                 print("❌ Failed to create profile: \(error.localizedDescription)")
             }
             .disposed(by: self.disposeBag)
+    }
+    
+    private func renderUsernameAvailability(state: SignInViewModel.UsernameAvailabilityState) {
+        switch state {
+            
+        case .idle:
+            self.validationLabel.text = "✨ This will be your unique username"
+            
+        case .invalidFormat:
+            self.validationLabel.text = "❌ 3–15 chars · a–z, 0–9, . and _"
+            
+        case .checking:
+            self.validationLabel.text = "🔎 Looking it up…"
+            
+        case .available:
+            self.validationLabel.text = "✅ That name is all yours"
+            
+        case .taken:
+            self.validationLabel.text = "😅 Looks like that name is taken"
+        }
     }
 }

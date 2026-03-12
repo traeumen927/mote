@@ -29,7 +29,9 @@ final class CreateProfileUseCase {
         date: Date = Date(),
         completion: @escaping (Result<Profile, Error>) -> Void
     ) {
-        let normalizedUsername = username.trimmingCharacters(in: .whitespacesAndNewlines)
+        let normalizedUsername = username
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
         guard normalizedUsername.isEmpty == false else {
             completion(.failure(CreateProfileError.emptyUsername))
             return

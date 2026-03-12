@@ -11,23 +11,25 @@ final class CheckUsernameDuplicateUseCase {
     enum CheckUsernameDuplicateError: Error {
         case emptyUsername
     }
-
+    
     private let profileRepository: ProfileRepository
-
+    
     init(profileRepository: ProfileRepository) {
         self.profileRepository = profileRepository
     }
-
+    
     func execute(
         username: String,
         completion: @escaping (Result<Bool, Error>) -> Void
     ) {
-        let normalizedUsername = username.trimmingCharacters(in: .whitespacesAndNewlines)
+        let normalizedUsername = username
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
         guard normalizedUsername.isEmpty == false else {
             completion(.failure(CheckUsernameDuplicateError.emptyUsername))
             return
         }
-
+        
         self.profileRepository.isUsernameDuplicated(
             request: CheckUsernameDuplicateRequest(username: normalizedUsername),
             completion: completion
