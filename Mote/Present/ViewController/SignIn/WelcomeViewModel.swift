@@ -15,7 +15,7 @@ final class WelcomeViewModel {
     let profile: Profile
     
     var welcomeMessage: String {
-        "Congratulations on joining, \(self.profile.username)."
+        "Welcome, \(self.profile.username)"
     }
     
     let confirmRequested = PublishRelay<Void>()

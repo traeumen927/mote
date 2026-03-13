@@ -10,7 +10,7 @@ import UIKit
 // MARK: Resource/Assets/Color와 매칭되는 값
 enum PaletteColor: String {
     // Accent
-    case A20, A40, A60
+    case A20, A40, A60, B20
     // Ink
     case I10, I20, I30, I40
     // Neutral

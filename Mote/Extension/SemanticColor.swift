@@ -178,7 +178,7 @@ extension SemanticColor {
         // MARK: - Control
 
         case .buttonPrimaryBackground:
-            return .palette(.A40)
+            return .palette(.B20)
 
         case .buttonPrimaryForeground:
             return .palette(.I40)

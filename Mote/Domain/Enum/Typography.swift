@@ -10,7 +10,7 @@ import UIKit
 enum Typography {
 
     // MARK: - Title
-    static let largeTitle = UIFont.outfit(.thin, size: 32)
+    static let largeTitle = UIFont.outfit(.regular, size: 32)
     static let title1 = UIFont.outfit(.light, size: 24)
     static let title2 = UIFont.outfit(.regular, size: 20)
 

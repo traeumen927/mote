@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F11664B52F6434D000691DF5 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = F11664B42F6434D000691DF5 /* Lottie */; };
 		F1A047582F557E9700811944 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = F1A047572F557E9700811944 /* FirebaseAnalytics */; };
 		F1A0475A2F557E9700811944 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = F1A047592F557E9700811944 /* FirebaseAuth */; };
 		F1A0475C2F557E9700811944 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = F1A0475B2F557E9700811944 /* FirebaseCrashlytics */; };
@@ -90,6 +91,7 @@
 				F1A047582F557E9700811944 /* FirebaseAnalytics in Frameworks */,
 				F1A047682F55806E00811944 /* RxRelay in Frameworks */,
 				F1A0475A2F557E9700811944 /* FirebaseAuth in Frameworks */,
+				F11664B52F6434D000691DF5 /* Lottie in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -161,6 +163,7 @@
 				F1A047692F55806E00811944 /* RxSwift */,
 				F1E92DF92F5581720065C8E8 /* Kingfisher */,
 				F1E92E2A2F55953D0065C8E8 /* GoogleSignIn */,
+				F11664B42F6434D000691DF5 /* Lottie */,
 			);
 			productName = Mote;
 			productReference = F1D31B982F5578EC00326120 /* Mote.app */;
@@ -250,6 +253,7 @@
 				F1A047642F55806E00811944 /* XCRemoteSwiftPackageReference "RxSwift" */,
 				F1E92DF82F5581720065C8E8 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				F1E92E292F55953D0065C8E8 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+				F11664B32F6434D000691DF5 /* XCRemoteSwiftPackageReference "lottie-spm" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = F1D31B992F5578EC00326120 /* Products */;
@@ -628,6 +632,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		F11664B32F6434D000691DF5 /* XCRemoteSwiftPackageReference "lottie-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-spm.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.6.0;
+			};
+		};
 		F1A047562F557E9700811944 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
@@ -671,6 +683,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		F11664B42F6434D000691DF5 /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F11664B32F6434D000691DF5 /* XCRemoteSwiftPackageReference "lottie-spm" */;
+			productName = Lottie;
+		};
 		F1A047572F557E9700811944 /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = F1A047562F557E9700811944 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
