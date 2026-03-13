@@ -131,7 +131,6 @@ final class AppCoordinator {
     }
     
     private func makeSignInViewController() -> UIViewController {
-        
         let signOutUseCase = SignOutUseCase(authRepository: self.authRepository)
         let fetchProfileUseCase = FetchProfileUseCase(profileRepository: self.profileRepository)
         let createProfileUseCase = CreateProfileUseCase(profileRepository: self.profileRepository)

@@ -28,31 +28,20 @@ final class SignInCoordinator {
     }
     
     func start() -> UIViewController {
-        let navigationController = UINavigationController()
-        let temporaryProfile = Profile(
-            uid: "layout-test-user",
-            username: "LayoutTester",
-            createAt: Date(),
-            lastActiveAt: Date()
+        let viewModel = SignInViewModel(
+            createProfileUseCase: self.createProfileUseCase,
+            checkUsernameDuplicateUseCase: self.checkUsernameDuplicateUseCase,
+            fetchProfileUseCase: self.fetchProfileUseCase,
+            signOutUseCase: self.signOutUseCase
         )
-        self.showWelcome(profile: temporaryProfile, in: navigationController)
-        return navigationController
+        let signInViewController = SignInViewController(viewModel: viewModel)
+        let navigationController = UINavigationController(rootViewController: signInViewController)
         
-        // TODO: UI 테스트후 복구
-        //        let viewModel = SignInViewModel(
-        //            createProfileUseCase: self.createProfileUseCase,
-        //            checkUsernameDuplicateUseCase: self.checkUsernameDuplicateUseCase,
-        //            fetchProfileUseCase: self.fetchProfileUseCase,
-        //            signOutUseCase: self.signOutUseCase
-        //        )
-        //        let signInViewController = SignInViewController(viewModel: viewModel)
-        //        let navigationController = UINavigationController(rootViewController: signInViewController)
-        //
-        //        viewModel.onProfileCreated = { [weak self, weak navigationController] profile in
-        //            self?.showWelcome(profile: profile, in: navigationController)
-        //        }
-        //
-        //        return navigationController
+        viewModel.onProfileCreated = { [weak self, weak navigationController] profile in
+            self?.showWelcome(profile: profile, in: navigationController)
+        }
+        
+        return navigationController
     }
     
     private func showWelcome(profile: Profile, in navigationController: UINavigationController?) {
