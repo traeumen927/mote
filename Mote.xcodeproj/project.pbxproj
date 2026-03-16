@@ -6,6 +6,21 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		F11664B52F6434D000691DF5 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = F11664B42F6434D000691DF5 /* Lottie */; };
+		F1A047582F557E9700811944 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = F1A047572F557E9700811944 /* FirebaseAnalytics */; };
+		F1A0475A2F557E9700811944 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = F1A047592F557E9700811944 /* FirebaseAuth */; };
+		F1A0475C2F557E9700811944 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = F1A0475B2F557E9700811944 /* FirebaseCrashlytics */; };
+		F1A0475E2F557E9700811944 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = F1A0475D2F557E9700811944 /* FirebaseFirestore */; };
+		F1A047602F557E9700811944 /* FirebasePerformance in Frameworks */ = {isa = PBXBuildFile; productRef = F1A0475F2F557E9700811944 /* FirebasePerformance */; };
+		F1A047632F55802000811944 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = F1A047622F55802000811944 /* SnapKit */; };
+		F1A047662F55806E00811944 /* RxCocoa in Frameworks */ = {isa = PBXBuildFile; productRef = F1A047652F55806E00811944 /* RxCocoa */; };
+		F1A047682F55806E00811944 /* RxRelay in Frameworks */ = {isa = PBXBuildFile; productRef = F1A047672F55806E00811944 /* RxRelay */; };
+		F1A0476A2F55806E00811944 /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = F1A047692F55806E00811944 /* RxSwift */; };
+		F1E92DFA2F5581720065C8E8 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = F1E92DF92F5581720065C8E8 /* Kingfisher */; };
+		F1E92E2B2F55953D0065C8E8 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = F1E92E2A2F55953D0065C8E8 /* GoogleSignIn */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		F1D31BAF2F5578ED00326120 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -65,6 +80,18 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F1A0476A2F55806E00811944 /* RxSwift in Frameworks */,
+				F1A0475C2F557E9700811944 /* FirebaseCrashlytics in Frameworks */,
+				F1E92E2B2F55953D0065C8E8 /* GoogleSignIn in Frameworks */,
+				F1A0475E2F557E9700811944 /* FirebaseFirestore in Frameworks */,
+				F1A047602F557E9700811944 /* FirebasePerformance in Frameworks */,
+				F1E92DFA2F5581720065C8E8 /* Kingfisher in Frameworks */,
+				F1A047662F55806E00811944 /* RxCocoa in Frameworks */,
+				F1A047632F55802000811944 /* SnapKit in Frameworks */,
+				F1A047582F557E9700811944 /* FirebaseAnalytics in Frameworks */,
+				F1A047682F55806E00811944 /* RxRelay in Frameworks */,
+				F1A0475A2F557E9700811944 /* FirebaseAuth in Frameworks */,
+				F11664B52F6434D000691DF5 /* Lottie in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -125,6 +152,18 @@
 			);
 			name = Mote;
 			packageProductDependencies = (
+				F1A047572F557E9700811944 /* FirebaseAnalytics */,
+				F1A047592F557E9700811944 /* FirebaseAuth */,
+				F1A0475B2F557E9700811944 /* FirebaseCrashlytics */,
+				F1A0475D2F557E9700811944 /* FirebaseFirestore */,
+				F1A0475F2F557E9700811944 /* FirebasePerformance */,
+				F1A047622F55802000811944 /* SnapKit */,
+				F1A047652F55806E00811944 /* RxCocoa */,
+				F1A047672F55806E00811944 /* RxRelay */,
+				F1A047692F55806E00811944 /* RxSwift */,
+				F1E92DF92F5581720065C8E8 /* Kingfisher */,
+				F1E92E2A2F55953D0065C8E8 /* GoogleSignIn */,
+				F11664B42F6434D000691DF5 /* Lottie */,
 			);
 			productName = Mote;
 			productReference = F1D31B982F5578EC00326120 /* Mote.app */;
@@ -208,6 +247,14 @@
 			);
 			mainGroup = F1D31B8F2F5578EC00326120;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				F1A047562F557E9700811944 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				F1A047612F55802000811944 /* XCRemoteSwiftPackageReference "SnapKit" */,
+				F1A047642F55806E00811944 /* XCRemoteSwiftPackageReference "RxSwift" */,
+				F1E92DF82F5581720065C8E8 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				F1E92E292F55953D0065C8E8 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+				F11664B32F6434D000691DF5 /* XCRemoteSwiftPackageReference "lottie-spm" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = F1D31B992F5578EC00326120 /* Products */;
 			projectDirPath = "";
@@ -293,7 +340,6 @@
 				INFOPLIST_FILE = Mote/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
@@ -325,7 +371,6 @@
 				INFOPLIST_FILE = Mote/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
@@ -585,6 +630,120 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		F11664B32F6434D000691DF5 /* XCRemoteSwiftPackageReference "lottie-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-spm.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.6.0;
+			};
+		};
+		F1A047562F557E9700811944 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.10.0;
+			};
+		};
+		F1A047612F55802000811944 /* XCRemoteSwiftPackageReference "SnapKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SnapKit/SnapKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.7.1;
+			};
+		};
+		F1A047642F55806E00811944 /* XCRemoteSwiftPackageReference "RxSwift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ReactiveX/RxSwift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.10.1;
+			};
+		};
+		F1E92DF82F5581720065C8E8 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.7.0;
+			};
+		};
+		F1E92E292F55953D0065C8E8 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.1.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		F11664B42F6434D000691DF5 /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F11664B32F6434D000691DF5 /* XCRemoteSwiftPackageReference "lottie-spm" */;
+			productName = Lottie;
+		};
+		F1A047572F557E9700811944 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F1A047562F557E9700811944 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		F1A047592F557E9700811944 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F1A047562F557E9700811944 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		F1A0475B2F557E9700811944 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F1A047562F557E9700811944 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
+		};
+		F1A0475D2F557E9700811944 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F1A047562F557E9700811944 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		F1A0475F2F557E9700811944 /* FirebasePerformance */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F1A047562F557E9700811944 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebasePerformance;
+		};
+		F1A047622F55802000811944 /* SnapKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F1A047612F55802000811944 /* XCRemoteSwiftPackageReference "SnapKit" */;
+			productName = SnapKit;
+		};
+		F1A047652F55806E00811944 /* RxCocoa */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F1A047642F55806E00811944 /* XCRemoteSwiftPackageReference "RxSwift" */;
+			productName = RxCocoa;
+		};
+		F1A047672F55806E00811944 /* RxRelay */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F1A047642F55806E00811944 /* XCRemoteSwiftPackageReference "RxSwift" */;
+			productName = RxRelay;
+		};
+		F1A047692F55806E00811944 /* RxSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F1A047642F55806E00811944 /* XCRemoteSwiftPackageReference "RxSwift" */;
+			productName = RxSwift;
+		};
+		F1E92DF92F5581720065C8E8 /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F1E92DF82F5581720065C8E8 /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
+		};
+		F1E92E2A2F55953D0065C8E8 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F1E92E292F55953D0065C8E8 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = F1D31B902F5578EC00326120 /* Project object */;
 }
