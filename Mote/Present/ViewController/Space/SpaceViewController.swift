@@ -28,11 +28,17 @@ final class SpaceViewController: UIViewController {
     
     private enum Row {
         case profile
+        case motes
+        case appearance
         case logout
         
         var iconName: String? {
             switch self {
             case .profile:
+                return nil
+            case .motes:
+                return nil
+            case .appearance:
                 return nil
             case .logout:
                 return nil
@@ -42,6 +48,7 @@ final class SpaceViewController: UIViewController {
     
     private let sections: [[Row]] = [
         [.profile],
+        [.motes, .appearance],
         [.logout]
     ]
     
@@ -137,6 +144,20 @@ extension SpaceViewController: UITableViewDataSource {
             config.textProperties.color = .label
             cell.accessoryType = .disclosureIndicator
             
+        case .motes:
+            config.text = "Motes"
+            config.image = UIImage(systemName: row.iconName ?? "")
+            config.imageProperties.tintColor = .systemGray
+            config.textProperties.color = .label
+            cell.accessoryType = .disclosureIndicator
+            
+        case .appearance:
+            config.text = "Appearance"
+            config.image = UIImage(systemName: row.iconName ?? "")
+            config.imageProperties.tintColor = .systemGray
+            config.textProperties.color = .label
+            cell.accessoryType = .disclosureIndicator
+            
         case .logout:
             config.text = "Sign Out"
             config.textProperties.color = .systemRed
@@ -161,7 +182,16 @@ extension SpaceViewController: UITableViewDelegate {
         
         switch row {
         case .profile:
-            print("프로필 화면으로 이동")
+            let profileViewController = ProfileViewController(viewModel: ProfileViewModel())
+            self.navigationController?.pushViewController(profileViewController, animated: true)
+            
+        case .motes:
+            let themeViewController = MotesViewController(viewModel: MotesViewModel())
+            self.navigationController?.pushViewController(themeViewController, animated: true)
+            
+        case .appearance:
+            let appearanceViewController = AppearanceViewController(viewModel: AppearanceViewModel())
+            self.navigationController?.pushViewController(appearanceViewController, animated: true)
             
         case .logout:
             self.handleLogout()
@@ -169,7 +199,7 @@ extension SpaceViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
-        guard section == 1 else { return nil }
+        guard section == 2 else { return nil }
         return "You will be signed out of this account."
     }
 }
