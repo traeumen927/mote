@@ -10,6 +10,7 @@ import UIKit
 final class MainTabViewController: UITabBarController {
     
     private let viewModel: MainTabViewModel
+    private var spaceCoordinator: SpaceCoordinator?
     
     init(viewModel: MainTabViewModel) {
         self.viewModel = viewModel
@@ -35,13 +36,18 @@ final class MainTabViewController: UITabBarController {
         let driftViewController = DriftViewController(viewModel: viewModel.driftViewModel)
         driftViewController.tabBarItem = UITabBarItem(title: nil, image: UIImage(systemName: "circle.dotted"), selectedImage: UIImage(systemName: "circle.dotted"))
         
-        let spaceViewController = SpaceViewController(viewModel: viewModel.spaceViewModel)
-        spaceViewController.tabBarItem = UITabBarItem(title: nil, image: UIImage(systemName: "square.grid.2x2"), selectedImage: UIImage(systemName: "square.grid.2x2"))
+        let todayNavigationController = UINavigationController(rootViewController: todayViewController)
+        let driftNavigationController = UINavigationController(rootViewController: driftViewController)
+        
+        let spaceCoordinator = SpaceCoordinator(spaceViewModel: self.viewModel.spaceViewModel)
+        let spaceRootViewController = spaceCoordinator.start()
+        spaceRootViewController.tabBarItem = UITabBarItem(title: nil, image: UIImage(systemName: "square.grid.2x2"), selectedImage: UIImage(systemName: "square.grid.2x2"))
+        self.spaceCoordinator = spaceCoordinator
         
         self.setViewControllers([
-            UINavigationController(rootViewController: todayViewController),
-            UINavigationController(rootViewController: driftViewController),
-            UINavigationController(rootViewController: spaceViewController)
+            todayNavigationController,
+            driftNavigationController,
+            spaceRootViewController
         ], animated: false)
     }
 }

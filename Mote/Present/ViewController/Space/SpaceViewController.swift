@@ -12,6 +12,8 @@ final class SpaceViewController: UIViewController {
     
     private let viewModel: SpaceViewModel
     
+    weak var coordinator: SpaceCoordinating?
+    
     private enum Section: Int, CaseIterable {
         case profile
         case account
@@ -182,16 +184,13 @@ extension SpaceViewController: UITableViewDelegate {
         
         switch row {
         case .profile:
-            let profileViewController = ProfileViewController(viewModel: ProfileViewModel())
-            self.navigationController?.pushViewController(profileViewController, animated: true)
+            self.coordinator?.showProfile()
             
         case .motes:
-            let themeViewController = MotesViewController(viewModel: MotesViewModel())
-            self.navigationController?.pushViewController(themeViewController, animated: true)
+            self.coordinator?.showMotes()
             
         case .appearance:
-            let appearanceViewController = AppearanceViewController(viewModel: AppearanceViewModel())
-            self.navigationController?.pushViewController(appearanceViewController, animated: true)
+            self.coordinator?.showAppearance()
             
         case .logout:
             self.handleLogout()
