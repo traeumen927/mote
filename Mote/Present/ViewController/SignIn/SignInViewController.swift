@@ -45,7 +45,10 @@ final class SignInViewController: UIViewController {
         label.text = "What should we call you?"
         label.font = Typography.largeTitle
         label.textColor = SemanticColor.textPrimary.uiColor
-        label.textAlignment = .center
+        label.textAlignment = .left
+        label.numberOfLines = 1
+        label.adjustsFontSizeToFitWidth = true
+        label.minimumScaleFactor = 0.72
         return label
     }()
     

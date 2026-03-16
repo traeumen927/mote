@@ -14,7 +14,7 @@ enum PaletteColor: String {
     // Ink
     case I10, I20, I30, I40
     // Neutral
-    case N10, N20, N30, N40, N50, R10, R20
+    case N10, N20, N30, N40, N50, R10, R20, G10
     // State
     case SG20, SG30, SG40, SS40, SR40, SY40, MB10, MB20, MB30, CT10, CT20
 }

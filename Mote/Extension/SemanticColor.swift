@@ -79,7 +79,7 @@ extension SemanticColor {
             return .palette(.N30)
 
         case .bgGrouped:
-            return .palette(.N10)
+            return .palette(.G10)
 
         case .bgInteractive:
             return .palette(.N20)
