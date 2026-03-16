@@ -30,19 +30,10 @@ final class SpaceViewController: UIViewController {
         case profile
         case logout
         
-        var title: String {
-            switch self {
-            case .profile:
-                return "내 정보"
-            case .logout:
-                return "Sign Out"
-            }
-        }
-        
         var iconName: String? {
             switch self {
             case .profile:
-                return "person.circle"
+                return nil
             case .logout:
                 return nil
             }
@@ -136,18 +127,20 @@ extension SpaceViewController: UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         
         var config = cell.defaultContentConfiguration()
-        config.text = row.title
-        config.textProperties.font = .systemFont(ofSize: 17)
+        config.textProperties.font = Typography.bodyLarge
         
         switch row {
         case .profile:
+            config.text = ProfileSession.shared.currentProfile?.username ?? "User"
             config.image = UIImage(systemName: row.iconName ?? "")
             config.imageProperties.tintColor = .systemGray
             config.textProperties.color = .label
             cell.accessoryType = .disclosureIndicator
             
         case .logout:
+            config.text = "Sign Out"
             config.textProperties.color = .systemRed
+            config.textProperties.alignment = .center
             cell.accessoryType = .none
         }
         
