@@ -7,6 +7,10 @@
 **/*.xcuserstate
 DerivedData/
 
+# Firebase
+GoogleService-Info.plist
+**/GoogleService-Info.plist
+
 ## Obj-C/Swift specific
 *.hmap
 
