@@ -24,10 +24,15 @@ final class DriftScene: SKScene {
     private let initialAngularVelocityRange: ClosedRange<CGFloat> = 1.2...4.2
     
     /// 화면 위(비가시 영역) 스폰 공간 높이.
-    private let hiddenSpawnAreaHeight: CGFloat = 180
+    private let hiddenSpawnAreaHeight: CGFloat = 320
     
     /// 스폰 시 겹침 방지를 위한 최소 간격 여유치.
     private let spawnSeparationPadding: CGFloat = 8
+    
+    private struct ExistingCircle {
+        let position: CGPoint
+        let radius: CGFloat
+    }
     
     override func didMove(to view: SKView) {
         super.didMove(to: view)
@@ -160,46 +165,57 @@ final class DriftScene: SKScene {
         let minY = self.size.height + nodeRadius + 8
         let maxY = self.size.height + self.hiddenSpawnAreaHeight - nodeRadius - 8
         
-        let existingNodes = Array(self.emotionNodesByDateKey.values)
-        let isOverlapping: (CGPoint) -> Bool = { candidate in
-            existingNodes.contains { existing in
-                let existingRadius = max(existing.frame.width, existing.frame.height) * 0.52
-                let minimumDistance = existingRadius + nodeRadius + self.spawnSeparationPadding
-                return hypot(existing.position.x - candidate.x, existing.position.y - candidate.y) < minimumDistance
-            }
+        let yUpperBound = max(maxY, minY)
+        
+        let existingCircles = self.emotionNodesByDateKey.values.map { node in
+            ExistingCircle(
+                position: node.position,
+                radius: max(node.frame.width, node.frame.height) * 0.52
+            )
         }
         
-        // 1) 랜덤 샘플링으로 빠르게 비충돌 위치 탐색
-        for _ in 0..<40 {
-            let candidate = CGPoint(
+        let existingCount = existingCircles.count
+        let fastSampleCount = min(380, max(80, 40 + (existingCount * 12)))
+        let bestCandidateSampleCount = min(720, max(220, 120 + (existingCount * 20)))
+        
+        let nearestFreeDistance: (CGPoint) -> CGFloat = { candidate in
+            existingCircles
+                .map { existing in
+                    let minimumDistance = existing.radius + nodeRadius + self.spawnSeparationPadding
+                    return hypot(existing.position.x - candidate.x, existing.position.y - candidate.y) - minimumDistance
+                }
+                .min() ?? .greatestFiniteMagnitude
+        }
+        
+        let randomCandidate: () -> CGPoint = {
+            CGPoint(
                 x: CGFloat.random(in: minX...maxX),
-                y: CGFloat.random(in: minY...max(maxY, minY))
+                y: CGFloat.random(in: minY...yUpperBound)
             )
-            if !isOverlapping(candidate) {
+        }
+        
+        // 1) 동적 샘플 수로 비충돌 위치를 빠르게 탐색
+        for _ in 0..<fastSampleCount {
+            let candidate = randomCandidate()
+            if nearestFreeDistance(candidate) >= 0 {
                 return candidate
             }
         }
-        
-        // 2) 실패 시 격자 탐색으로 가장 여유가 큰 지점 선택
-        var bestPoint = CGPoint(x: (minX + maxX) / 2, y: minY)
+        // 2) 모든 점이 빽빽할 때는 best-candidate 샘플링으로
+        //    가장 여유가 큰 점(= 최근접 거리 최대)을 선택해 Poisson-disc에 가깝게 배치
+        var bestPoint = randomCandidate()
         var bestDistance = -CGFloat.greatestFiniteMagnitude
         
-        stride(from: minX, through: maxX, by: 20).forEach { x in
-            stride(from: minY, through: max(maxY, minY), by: 20).forEach { y in
-                let candidate = CGPoint(x: x, y: y)
-                let nearestDistance = existingNodes
-                    .map { existing in
-                        let existingRadius = max(existing.frame.width, existing.frame.height) * 0.52
-                        return hypot(existing.position.x - x, existing.position.y - y) - (existingRadius + nodeRadius)
-                    }
-                    .min() ?? .greatestFiniteMagnitude
-                
-                if nearestDistance > bestDistance {
-                    bestDistance = nearestDistance
-                    bestPoint = candidate
-                }
+        for _ in 0..<bestCandidateSampleCount {
+            let candidate = randomCandidate()
+            let distance = nearestFreeDistance(candidate)
+            
+            if distance > bestDistance {
+                bestDistance = distance
+                bestPoint = candidate
             }
         }
+        
         return bestPoint
     }
     
