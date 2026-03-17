@@ -87,6 +87,18 @@ final class DriftScene: SKScene {
         }
     }
     
+    /// 현재 떠있는 모든 모트를 제거하고, 전달받은 감정 목록을 새로 스폰한다.
+    /// 리프레시 시 기존 진행 상태를 초기화해 항상 상단에서 다시 떨어지도록 보장한다.
+    func resetAndApply(emotions: [EmotionRecord]) {
+        self.removeAllEmotionNodes()
+        self.apply(emotions: emotions)
+    }
+
+    private func removeAllEmotionNodes() {
+        self.emotionNodesByDateKey.values.forEach { $0.removeFromParent() }
+        self.emotionNodesByDateKey.removeAll(keepingCapacity: true)
+    }
+    
     /// Scene 전체 외곽에 edgeLoop를 만들어 노드가 화면 밖으로 빠져나가지 않게 한다.
     private func configureWorldBoundary() {
         guard self.size.width > 0, self.size.height > 0 else { return }

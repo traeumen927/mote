@@ -8,30 +8,28 @@
 import UIKit
 import SpriteKit
 import SnapKit
+import RxSwift
+import RxCocoa
 
 final class MotesViewController: UIViewController {
+    
     let viewModel: MotesViewModel
+    private let disposeBag = DisposeBag()
     
     private let spriteView = SKView()
     private let driftScene = DriftScene(size: .zero)
     
     // MARK: 우측 상단 리프레시 버튼
     private lazy var refreshBarButtonItem: UIBarButtonItem = {
-        let button = UIBarButtonItem(
-            barButtonSystemItem: .refresh,
-            target: nil,
-            action: nil
-        )
+        let button = UIBarButtonItem(barButtonSystemItem: .refresh, target: nil, action: nil)
+        
         return button
     }()
     
     // MARK: 우측 상단 편집 버튼
     private lazy var menuBarButtonItem: UIBarButtonItem = {
-        let button = UIBarButtonItem(
-            barButtonSystemItem: .edit,
-            target: nil,
-            action: nil
-        )
+        let button = UIBarButtonItem(barButtonSystemItem: .edit, target: nil, action: nil)
+        
         return button
     }()
     
@@ -48,6 +46,7 @@ final class MotesViewController: UIViewController {
         super.viewDidLoad()
         self.setupLayout()
         self.setupScene()
+        self.bind()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -55,7 +54,7 @@ final class MotesViewController: UIViewController {
         self.spriteView.isPaused = false
         
         DispatchQueue.main.async { [weak self] in
-            self?.applyRandomItems()
+            self?.applyRandomItems(resetExisting: true)
         }
     }
     
@@ -89,8 +88,48 @@ final class MotesViewController: UIViewController {
         self.spriteView.presentScene(self.driftScene)
     }
     
-    private func applyRandomItems() {
+    private func bind() {
+        self.refreshBarButtonItem.rx.tap
+            .bind(onNext: { [weak self] in
+                guard let self else { return }
+                
+                self.refreshBarButtonItem.isEnabled = false
+                self.applyRandomItems(resetExisting: true)
+                
+                MainScheduler.instance.scheduleRelative((), dueTime: .seconds(1)) { [weak self] _ in
+                    self?.refreshBarButtonItem.isEnabled = true
+                    return Disposables.create()
+                }
+                .disposed(by: self.disposeBag)
+            })
+            .disposed(by: self.disposeBag)
+        
+        self.menuBarButtonItem.rx.tap
+            .bind(onNext: { [weak self] in
+                self?.presentEditBottomSheet()
+            })
+            .disposed(by: self.disposeBag)
+    }
+    
+    private func applyRandomItems(resetExisting: Bool) {
         let randomEmotions = self.viewModel.makeRandomEmotionRecords(limit: 30)
-        self.driftScene.apply(emotions: randomEmotions)
+        if resetExisting {
+            self.driftScene.resetAndApply(emotions: randomEmotions)
+        } else {
+            self.driftScene.apply(emotions: randomEmotions)
+        }
+    }
+    
+    private func presentEditBottomSheet() {
+        let editViewController = MotesEditViewController()
+        editViewController.modalPresentationStyle = .automatic
+        
+        if let sheet = editViewController.sheetPresentationController {
+            sheet.detents = [.medium(), .large()]
+            sheet.selectedDetentIdentifier = .medium
+            sheet.prefersGrabberVisible = true
+            sheet.preferredCornerRadius = 18
+        }
+        self.present(editViewController, animated: true)
     }
 }
