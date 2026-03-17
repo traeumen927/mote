@@ -27,7 +27,7 @@ final class DriftScene: SKScene {
     private let hiddenSpawnAreaHeight: CGFloat = 320
     
     /// 스폰 시 겹침 방지를 위한 최소 간격 여유치.
-    private let spawnSeparationPadding: CGFloat = 8
+    private let spawnSeparationPadding: CGFloat = 2
     
     private struct ExistingCircle {
         let position: CGPoint

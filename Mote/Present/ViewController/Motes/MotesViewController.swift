@@ -13,7 +13,7 @@ final class MotesViewController: UIViewController {
     let viewModel: MotesViewModel
     
     private let spriteView = SKView()
-    private let motesScene = MotesScene(size: .zero)
+    private let driftScene = DriftScene(size: .zero)
     
     init(viewModel: MotesViewModel) {
         self.viewModel = viewModel
@@ -28,12 +28,15 @@ final class MotesViewController: UIViewController {
         super.viewDidLoad()
         self.setupLayout()
         self.setupScene()
-        self.applyRandomItems()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.spriteView.isPaused = false
+        
+        DispatchQueue.main.async { [weak self] in
+            self?.applyRandomItems()
+        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -43,7 +46,8 @@ final class MotesViewController: UIViewController {
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        self.motesScene.updateWorldBounds(for: self.spriteView.bounds.size)
+        let sceneSize = self.spriteView.bounds.size
+        self.driftScene.updateWorldBounds(for: sceneSize)
     }
     
     private func setupLayout() {
@@ -60,14 +64,12 @@ final class MotesViewController: UIViewController {
     }
     
     private func setupScene() {
-        self.motesScene.scaleMode = .resizeFill
-        self.spriteView.presentScene(self.motesScene)
+        self.driftScene.scaleMode = .resizeFill
+        self.spriteView.presentScene(self.driftScene)
     }
     
     private func applyRandomItems() {
-        let randomItems = (0..<30).map { _ in
-            EmotionItem.allCases.randomElement()?.rawValue ?? EmotionItem.happy.rawValue
-        }
-        self.motesScene.applyRandomItems(randomItems)
+        let randomEmotions = self.viewModel.makeRandomEmotionRecords(limit: 30)
+        self.driftScene.apply(emotions: randomEmotions)
     }
 }
