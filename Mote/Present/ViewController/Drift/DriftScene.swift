@@ -29,6 +29,9 @@ final class DriftScene: SKScene {
     /// 스폰 시 겹침 방지를 위한 최소 간격 여유치.
     private let spawnSeparationPadding: CGFloat = 2
     
+    /// mote 사이즈
+    private var moteSizeOption: MoteSizeOption = .default
+    
     private struct ExistingCircle {
         let position: CGPoint
         let radius: CGFloat
@@ -93,7 +96,17 @@ final class DriftScene: SKScene {
         self.removeAllEmotionNodes()
         self.apply(emotions: emotions)
     }
-
+    
+    func applyMoteSizeOption(_ sizeOption: MoteSizeOption) {
+        guard self.moteSizeOption != sizeOption else { return }
+        
+        self.moteSizeOption = sizeOption
+        self.emotionNodesByDateKey.values.forEach { node in
+            node.fontSize = sizeOption.fontSize
+            self.rebuildPhysicsBody(for: node)
+        }
+    }
+    
     private func removeAllEmotionNodes() {
         self.emotionNodesByDateKey.values.forEach { $0.removeFromParent() }
         self.emotionNodesByDateKey.removeAll(keepingCapacity: true)
@@ -125,6 +138,7 @@ final class DriftScene: SKScene {
     private func makeNode(for record: EmotionRecord) -> SKLabelNode {
         let node = SKLabelNode(text: record.emotion)
         node.fontSize = 50
+        node.fontSize = self.moteSizeOption.fontSize
         node.fontColor = .white
         node.verticalAlignmentMode = .center
         node.horizontalAlignmentMode = .center
@@ -133,17 +147,9 @@ final class DriftScene: SKScene {
         // 생성 시점의 시각적 회전 각도도 랜덤으로 부여.
         node.zRotation = CGFloat.random(in: -(.pi / 8)...(.pi / 8))
         
-        let nodeRadius = max(node.frame.width, node.frame.height) * 0.52
+        let nodeRadius = self.moteRadius(for: node)
         node.position = self.makeSpawnPosition(nodeRadius: nodeRadius)
-        
-        let body = SKPhysicsBody(circleOfRadius: nodeRadius)
-        body.allowsRotation = true
-        body.friction = 0.7
-        body.angularDamping = 0.9
-        body.linearDamping = 0.55
-        body.mass = 0.12
-        body.affectedByGravity = true
-        node.physicsBody = body
+        node.physicsBody = self.makeMotePhysicsBody(radius: nodeRadius)
         
         self.applyInitialImpulse(to: node)
         
@@ -155,15 +161,7 @@ final class DriftScene: SKScene {
         if node.text != record.emotion {
             node.text = record.emotion
             
-            let newBody = SKPhysicsBody(circleOfRadius: max(node.frame.width, node.frame.height) * 0.52)
-            newBody.allowsRotation = true
-            newBody.restitution = 0.22
-            newBody.friction = 0.7
-            newBody.angularDamping = 0.9
-            newBody.linearDamping = 0.55
-            newBody.mass = 0.12
-            newBody.affectedByGravity = true
-            node.physicsBody = newBody
+            self.rebuildPhysicsBody(for: node)
             
             // 텍스트/바디 갱신 후에도 초기 움직임을 다시 주어 정적인 상태를 피함.
             self.applyInitialImpulse(to: node)
@@ -182,7 +180,7 @@ final class DriftScene: SKScene {
         let existingCircles = self.emotionNodesByDateKey.values.map { node in
             ExistingCircle(
                 position: node.position,
-                radius: max(node.frame.width, node.frame.height) * 0.52
+                radius: self.moteRadius(for: node)
             )
         }
         
@@ -245,5 +243,31 @@ final class DriftScene: SKScene {
         let randomAngularVelocity = CGFloat.random(in: self.initialAngularVelocityRange)
         let spinDirection: CGFloat = Bool.random() ? 1 : -1
         body.angularVelocity = randomAngularVelocity * spinDirection
+    }
+    
+    private func moteRadius(for node: SKLabelNode) -> CGFloat {
+        max(node.frame.width, node.frame.height) * 0.52
+    }
+    
+    private func makeMotePhysicsBody(radius: CGFloat) -> SKPhysicsBody {
+        let body = SKPhysicsBody(circleOfRadius: radius)
+        body.allowsRotation = true
+        body.restitution = 0.22
+        body.friction = 0.7
+        body.angularDamping = 0.9
+        body.linearDamping = 0.55
+        body.mass = 0.12
+        body.affectedByGravity = true
+        
+        return body
+    }
+    
+    private func rebuildPhysicsBody(for node: SKLabelNode) {
+        let currentVelocity = node.physicsBody?.velocity
+        let currentAngularVelocity = node.physicsBody?.angularVelocity
+        
+        node.physicsBody = self.makeMotePhysicsBody(radius: self.moteRadius(for: node))
+        node.physicsBody?.velocity = currentVelocity ?? .zero
+        node.physicsBody?.angularVelocity = currentAngularVelocity ?? 0
     }
 }

@@ -14,7 +14,6 @@ import RxCocoa
 final class DriftViewController: UIViewController {
     
     private let viewModel: DriftViewModel
-    
     private let disposeBag = DisposeBag()
     
     private let spriteView = SKView()

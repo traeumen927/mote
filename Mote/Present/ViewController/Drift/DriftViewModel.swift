@@ -16,10 +16,14 @@ final class DriftViewModel {
     let fetchFailed = PublishRelay<Error>()
     
     private let fetchRecentEmotionsUseCase: FetchRecentEmotionsUseCase
+    private let fetchMoteSizeUseCase: FetchMoteSizeUseCase
     private var activeRequestID: UUID?
     
-    init(fetchRecentEmotionsUseCase: FetchRecentEmotionsUseCase) {
+    init(fetchRecentEmotionsUseCase: FetchRecentEmotionsUseCase,
+         fetchMoteSizeUseCase: FetchMoteSizeUseCase
+    ) {
         self.fetchRecentEmotionsUseCase = fetchRecentEmotionsUseCase
+        self.fetchMoteSizeUseCase = fetchMoteSizeUseCase
     }
     
     func fetchRecentEmotions() {
