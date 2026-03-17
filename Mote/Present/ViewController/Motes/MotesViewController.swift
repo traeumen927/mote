@@ -15,6 +15,26 @@ final class MotesViewController: UIViewController {
     private let spriteView = SKView()
     private let driftScene = DriftScene(size: .zero)
     
+    // MARK: 우측 상단 리프레시 버튼
+    private lazy var refreshBarButtonItem: UIBarButtonItem = {
+        let button = UIBarButtonItem(
+            barButtonSystemItem: .refresh,
+            target: nil,
+            action: nil
+        )
+        return button
+    }()
+    
+    // MARK: 우측 상단 편집 버튼
+    private lazy var menuBarButtonItem: UIBarButtonItem = {
+        let button = UIBarButtonItem(
+            barButtonSystemItem: .edit,
+            target: nil,
+            action: nil
+        )
+        return button
+    }()
+    
     init(viewModel: MotesViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
@@ -53,6 +73,7 @@ final class MotesViewController: UIViewController {
     private func setupLayout() {
         self.navigationItem.title = "Motes"
         self.view.backgroundColor = SemanticColor.bgApp.uiColor
+        self.navigationItem.rightBarButtonItems = [menuBarButtonItem, refreshBarButtonItem]
         
         self.spriteView.backgroundColor = .clear
         self.spriteView.ignoresSiblingOrder = true
