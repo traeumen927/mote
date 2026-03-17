@@ -13,6 +13,7 @@ final class DriftViewModel {
     
     let isLoading = BehaviorRelay<Bool>(value: false)
     let recentEmotions = BehaviorRelay<[EmotionRecord]>(value: [])
+    let moteSizeOption = BehaviorRelay<MoteSizeOption>(value: .default)
     let fetchFailed = PublishRelay<Error>()
     
     private let fetchRecentEmotionsUseCase: FetchRecentEmotionsUseCase
@@ -50,6 +51,11 @@ final class DriftViewModel {
                 }
             }
         }
+    }
+    
+    func fetchMoteSizeOption() {
+        let sizeOption = self.fetchMoteSizeUseCase.execute()
+        self.moteSizeOption.accept(sizeOption)
     }
     
     func cancelOngoingEventsAndClearItems() {

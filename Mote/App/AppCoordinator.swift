@@ -25,7 +25,7 @@ final class AppCoordinator {
     private let googleAuthService: GoogleAuthServicing
     private let authRepository: AuthRepository
     private let profileRepository: ProfileRepository
-
+    
     private var authStateListenerHandle: AuthStateDidChangeListenerHandle?
     private var currentRootFlow: AppSessionState?
     
@@ -92,8 +92,8 @@ final class AppCoordinator {
         self.currentRootFlow = state
         
         if state != .profileMissing {
-                    self.signInCoordinator = nil
-                }
+            self.signInCoordinator = nil
+        }
     }
     
     private func resolveAppSessionState(user: User?, completion: @escaping (AppSessionState) -> Void) {
@@ -144,7 +144,7 @@ final class AppCoordinator {
         )
         
         coordinator.onSignInFlowCompleted = { [weak self] in
-                    self?.setRootViewController(for: .authenticated)
+            self?.setRootViewController(for: .authenticated)
         }
         
         self.signInCoordinator = coordinator
@@ -157,8 +157,12 @@ final class AppCoordinator {
     
     private func makeMainViewController() -> UIViewController {
         let signOutUseCase = SignOutUseCase(authRepository: self.authRepository)
+        let motePreferencesRepository = MotePreferencesRepositoryImpl(uidProvider: ProfileSession.shared)
+        let fetchMoteSizeUseCase = FetchMoteSizeUseCase(motePreferencesRepository: motePreferencesRepository)
+        
         let viewModel = MainTabViewModel(
             signOutUseCase: signOutUseCase,
+            fetchMoteSizeUseCase: fetchMoteSizeUseCase,
             firestore: Firestore.firestore(),
             uidProvider: ProfileSession.shared
         )

@@ -15,6 +15,7 @@ final class MainTabViewModel {
     
     init(
         signOutUseCase: SignOutUseCase,
+        fetchMoteSizeUseCase: FetchMoteSizeUseCase,
         firestore: Firestore,
         uidProvider: CurrentUserUIDProviding = ProfileSession.shared
     ) {
@@ -39,7 +40,10 @@ final class MainTabViewModel {
             observeTodayEmotionUseCase: observeTodayEmotionUseCase
         )
         
-        self.driftViewModel = DriftViewModel(fetchRecentEmotionsUseCase: fetchRecentEmotionsUseCase)
+        self.driftViewModel = DriftViewModel(
+            fetchRecentEmotionsUseCase: fetchRecentEmotionsUseCase,
+            fetchMoteSizeUseCase: fetchMoteSizeUseCase
+        )
         self.spaceViewModel = SpaceViewModel(signOutUseCase: signOutUseCase)
     }
 }

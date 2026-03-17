@@ -71,6 +71,15 @@ final class DriftViewController: UIViewController {
     }
     
     private func bind() {
+        self.viewModel.fetchMoteSizeOption()
+        
+        self.viewModel.moteSizeOption
+            .asDriver()
+            .drive(onNext: { [weak self] sizeOption in
+                self?.driftScene.applyMoteSizeOption(sizeOption)
+            })
+            .disposed(by: self.disposeBag)
+        
         self.viewModel.recentEmotions
             .map { Array($0.prefix(30)) }
             .asDriver(onErrorJustReturn: [])
