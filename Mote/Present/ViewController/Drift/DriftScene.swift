@@ -23,6 +23,12 @@ final class DriftScene: SKScene {
     /// 초기 회전 속도 랜덤 범위
     private let initialAngularVelocityRange: ClosedRange<CGFloat> = 1.2...4.2
     
+    /// 화면 위(비가시 영역) 스폰 공간 높이.
+    private let hiddenSpawnAreaHeight: CGFloat = 180
+    
+    /// 스폰 시 겹침 방지를 위한 최소 간격 여유치.
+    private let spawnSeparationPadding: CGFloat = 8
+    
     override func didMove(to view: SKView) {
         super.didMove(to: view)
         
@@ -80,7 +86,14 @@ final class DriftScene: SKScene {
     private func configureWorldBoundary() {
         guard self.size.width > 0, self.size.height > 0 else { return }
         
-        let boundaryFrame = CGRect(origin: .zero, size: self.size)
+        // 비가시 상단 영역까지 포함해서 월드 경계를 만든다.
+        // 상단에서 충돌해도 좌우 벽 밖으로 유실되지 않도록 하기위함
+        let boundaryFrame = CGRect(
+            x: 0,
+            y: 0,
+            width: self.size.width,
+            height: self.size.height + self.hiddenSpawnAreaHeight
+        )
         let body = SKPhysicsBody(edgeLoopFrom: boundaryFrame)
         body.restitution = 0.22
         body.friction = 0.8
@@ -103,11 +116,10 @@ final class DriftScene: SKScene {
         // 생성 시점의 시각적 회전 각도도 랜덤으로 부여.
         node.zRotation = CGFloat.random(in: -(.pi / 8)...(.pi / 8))
         
-        let x = self.makeSpawnXPosition()
-        let y = CGFloat.random(in: (self.size.height * 0.4)...(max(self.size.height - 24, self.size.height * 0.4)))
-        node.position = CGPoint(x: x, y: y)
+        let nodeRadius = max(node.frame.width, node.frame.height) * 0.52
+        node.position = self.makeSpawnPosition(nodeRadius: nodeRadius)
         
-        let body = SKPhysicsBody(circleOfRadius: max(node.frame.width, node.frame.height) * 0.52)
+        let body = SKPhysicsBody(circleOfRadius: nodeRadius)
         body.allowsRotation = true
         body.friction = 0.7
         body.angularDamping = 0.9
@@ -141,31 +153,54 @@ final class DriftScene: SKScene {
         }
     }
     
-    /// 기존 노드들과 겹침을 줄이기 위해 가장 여유 있는 X 지점을 선택.
-    private func makeSpawnXPosition() -> CGFloat {
-        let minX = CGFloat(24)
-        let maxX = max(self.size.width - 24, minX)
-        let existingX = self.emotionNodesByDateKey.values.map(\.position.x)
+    /// 비가시 상단 영역 안에서 기존 아이템들과 겹치지 않는 스폰 좌표를 만든다.
+    private func makeSpawnPosition(nodeRadius: CGFloat) -> CGPoint {
+        let minX = nodeRadius + 12
+        let maxX = max(self.size.width - nodeRadius - 12, minX)
+        let minY = self.size.height + nodeRadius + 8
+        let maxY = self.size.height + self.hiddenSpawnAreaHeight - nodeRadius - 8
         
-        guard !existingX.isEmpty else {
-            return CGFloat.random(in: minX...maxX)
-        }
-        
-        var bestX = minX
-        var bestDistance = -CGFloat.greatestFiniteMagnitude
-        
-        stride(from: minX, through: maxX, by: 18).forEach { candidateX in
-            let nearestDistance = existingX
-                .map { abs($0 - candidateX) }
-                .min() ?? 0
-            
-            if nearestDistance > bestDistance {
-                bestDistance = nearestDistance
-                bestX = candidateX
+        let existingNodes = Array(self.emotionNodesByDateKey.values)
+        let isOverlapping: (CGPoint) -> Bool = { candidate in
+            existingNodes.contains { existing in
+                let existingRadius = max(existing.frame.width, existing.frame.height) * 0.52
+                let minimumDistance = existingRadius + nodeRadius + self.spawnSeparationPadding
+                return hypot(existing.position.x - candidate.x, existing.position.y - candidate.y) < minimumDistance
             }
         }
         
-        return bestX
+        // 1) 랜덤 샘플링으로 빠르게 비충돌 위치 탐색
+        for _ in 0..<40 {
+            let candidate = CGPoint(
+                x: CGFloat.random(in: minX...maxX),
+                y: CGFloat.random(in: minY...max(maxY, minY))
+            )
+            if !isOverlapping(candidate) {
+                return candidate
+            }
+        }
+        
+        // 2) 실패 시 격자 탐색으로 가장 여유가 큰 지점 선택
+        var bestPoint = CGPoint(x: (minX + maxX) / 2, y: minY)
+        var bestDistance = -CGFloat.greatestFiniteMagnitude
+        
+        stride(from: minX, through: maxX, by: 20).forEach { x in
+            stride(from: minY, through: max(maxY, minY), by: 20).forEach { y in
+                let candidate = CGPoint(x: x, y: y)
+                let nearestDistance = existingNodes
+                    .map { existing in
+                        let existingRadius = max(existing.frame.width, existing.frame.height) * 0.52
+                        return hypot(existing.position.x - x, existing.position.y - y) - (existingRadius + nodeRadius)
+                    }
+                    .min() ?? .greatestFiniteMagnitude
+                
+                if nearestDistance > bestDistance {
+                    bestDistance = nearestDistance
+                    bestPoint = candidate
+                }
+            }
+        }
+        return bestPoint
     }
     
     /// 노드 생성/갱신 시점에만 1회 초기 이동량/회전값을 부여한다.

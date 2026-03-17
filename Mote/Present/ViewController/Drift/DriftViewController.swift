@@ -60,7 +60,6 @@ final class DriftViewController: UIViewController {
         
         self.spriteView.backgroundColor = .clear
         self.spriteView.ignoresSiblingOrder = true
-        
         self.view.addSubview(self.spriteView)
         self.spriteView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
