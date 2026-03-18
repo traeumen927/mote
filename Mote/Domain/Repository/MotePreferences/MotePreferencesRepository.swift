@@ -10,4 +10,7 @@ import Foundation
 protocol MotePreferencesRepository {
     func fetchMoteSize() -> MoteSizeOption
     func updateMoteSize(_ size: MoteSizeOption)
+    
+    func fetchAppearanceTheme() -> AppearanceThemeOption
+    func updateAppearanceTheme(_ theme: AppearanceThemeOption)
 }

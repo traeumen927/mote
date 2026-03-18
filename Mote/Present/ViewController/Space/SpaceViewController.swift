@@ -14,38 +14,11 @@ final class SpaceViewController: UIViewController {
     
     weak var coordinator: SpaceCoordinating?
     
-    private enum Section: Int, CaseIterable {
-        case profile
-        case account
-        
-        var title: String? {
-            switch self {
-            case .profile:
-                return nil
-            case .account:
-                return nil
-            }
-        }
-    }
-    
     private enum Row {
         case profile
         case motes
         case appearance
         case logout
-        
-        var iconName: String? {
-            switch self {
-            case .profile:
-                return nil
-            case .motes:
-                return nil
-            case .appearance:
-                return nil
-            case .logout:
-                return nil
-            }
-        }
     }
     
     private let sections: [[Row]] = [
@@ -137,38 +110,31 @@ extension SpaceViewController: UITableViewDataSource {
         
         var config = cell.defaultContentConfiguration()
         config.textProperties.font = Typography.bodyLarge
+        config.textProperties.color = SemanticColor.textPrimary.uiColor
+        config.secondaryTextProperties.color = SemanticColor.textSecondary.uiColor
+        cell.accessoryType = .none
+        cell.selectionStyle = .default
         
         switch row {
         case .profile:
             config.text = ProfileSession.shared.currentProfile?.username ?? "User"
-            config.image = UIImage(systemName: row.iconName ?? "")
-            config.imageProperties.tintColor = .systemGray
-            config.textProperties.color = .label
             cell.accessoryType = .disclosureIndicator
             
         case .motes:
             config.text = "Motes"
-            config.image = UIImage(systemName: row.iconName ?? "")
-            config.imageProperties.tintColor = .systemGray
-            config.textProperties.color = .label
             cell.accessoryType = .disclosureIndicator
             
         case .appearance:
             config.text = "Appearance"
-            config.image = UIImage(systemName: row.iconName ?? "")
-            config.imageProperties.tintColor = .systemGray
-            config.textProperties.color = .label
             cell.accessoryType = .disclosureIndicator
             
         case .logout:
             config.text = "Sign Out"
-            config.textProperties.color = .systemRed
+            config.textProperties.color = SemanticColor.accentStrong.uiColor
             config.textProperties.alignment = .center
-            cell.accessoryType = .none
         }
         
         cell.contentConfiguration = config
-        cell.selectionStyle = .default
         cell.backgroundColor = SemanticColor.bgGrouped.uiColor
         
         return cell
@@ -190,7 +156,7 @@ extension SpaceViewController: UITableViewDelegate {
             self.coordinator?.showMotes()
             
         case .appearance:
-            self.coordinator?.showAppearance()
+            return
             
         case .logout:
             self.handleLogout()

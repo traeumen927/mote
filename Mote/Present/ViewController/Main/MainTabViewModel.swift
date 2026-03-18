@@ -16,6 +16,8 @@ final class MainTabViewModel {
     init(
         signOutUseCase: SignOutUseCase,
         fetchMoteSizeUseCase: FetchMoteSizeUseCase,
+        fetchAppearanceThemeUseCase: FetchAppearanceThemeUseCase,
+        updateAppearanceThemeUseCase: UpdateAppearanceThemeUseCase,
         firestore: Firestore,
         uidProvider: CurrentUserUIDProviding = ProfileSession.shared
     ) {
@@ -44,6 +46,10 @@ final class MainTabViewModel {
             fetchRecentEmotionsUseCase: fetchRecentEmotionsUseCase,
             fetchMoteSizeUseCase: fetchMoteSizeUseCase
         )
-        self.spaceViewModel = SpaceViewModel(signOutUseCase: signOutUseCase)
+        self.spaceViewModel = SpaceViewModel(
+            signOutUseCase: signOutUseCase,
+            fetchAppearanceThemeUseCase: fetchAppearanceThemeUseCase,
+            updateAppearanceThemeUseCase: updateAppearanceThemeUseCase
+        )
     }
 }

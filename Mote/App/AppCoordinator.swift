@@ -51,6 +51,7 @@ final class AppCoordinator {
     }
     
     func start() {
+        self.applySavedAppearanceTheme()
         self.setRootViewController(for: .resolving)
         self.startAuthStateListening()
     }
@@ -159,13 +160,26 @@ final class AppCoordinator {
         let signOutUseCase = SignOutUseCase(authRepository: self.authRepository)
         let motePreferencesRepository = MotePreferencesRepositoryImpl(uidProvider: ProfileSession.shared)
         let fetchMoteSizeUseCase = FetchMoteSizeUseCase(motePreferencesRepository: motePreferencesRepository)
+        let fetchAppearanceThemeUseCase = FetchAppearanceThemeUseCase(motePreferencesRepository: motePreferencesRepository)
+        let updateAppearanceThemeUseCase = UpdateAppearanceThemeUseCase(motePreferencesRepository: motePreferencesRepository)
         
         let viewModel = MainTabViewModel(
             signOutUseCase: signOutUseCase,
             fetchMoteSizeUseCase: fetchMoteSizeUseCase,
+            fetchAppearanceThemeUseCase: fetchAppearanceThemeUseCase,
+            updateAppearanceThemeUseCase: updateAppearanceThemeUseCase,
             firestore: Firestore.firestore(),
             uidProvider: ProfileSession.shared
         )
         return MainTabViewController(viewModel: viewModel)
+    }
+    
+    private func applySavedAppearanceTheme() {
+        let motePreferencesRepository = MotePreferencesRepositoryImpl(uidProvider: ProfileSession.shared)
+        let fetchAppearanceThemeUseCase = FetchAppearanceThemeUseCase(
+            motePreferencesRepository: motePreferencesRepository
+        )
+        let theme = fetchAppearanceThemeUseCase.execute()
+        AppAppearance.apply(theme: theme, to: self.window)
     }
 }

@@ -8,10 +8,10 @@
 import Foundation
 
 final class MotePreferencesRepositoryImpl: MotePreferencesRepository {
-
+    
     private let userDefaults: UserDefaults
     private let uidProvider: CurrentUserUIDProviding
-
+    
     init(
         userDefaults: UserDefaults = .standard,
         uidProvider: CurrentUserUIDProviding = ProfileSession.shared
@@ -19,29 +19,51 @@ final class MotePreferencesRepositoryImpl: MotePreferencesRepository {
         self.userDefaults = userDefaults
         self.uidProvider = uidProvider
     }
-
+    
     func fetchMoteSize() -> MoteSizeOption {
-        guard let key = self.makePreferenceKey() else {
-            return .default
-        }
-
-        guard let rawValue = self.userDefaults.string(forKey: key) else {
-            return .default
-        }
-
-        return MoteSizeOption(rawValue: rawValue) ?? .default
+        self.fetchValue(for: .size, defaultValue: .default)
     }
-
+    
     func updateMoteSize(_ size: MoteSizeOption) {
-        guard let key = self.makePreferenceKey() else { return }
-        self.userDefaults.set(size.rawValue, forKey: key)
+        self.storeValue(size, for: .size)
     }
-
-    private func makePreferenceKey() -> String? {
+    
+    func fetchAppearanceTheme() -> AppearanceThemeOption {
+        self.fetchValue(for: .theme, defaultValue: .default)
+    }
+    
+    func updateAppearanceTheme(_ theme: AppearanceThemeOption) {
+        self.storeValue(theme, for: .theme)
+    }
+    
+    private func fetchValue<Value: RawRepresentable>(
+        for key: PreferenceKey,
+        defaultValue: Value
+    ) -> Value where Value.RawValue == String {
+        guard let userDefaultsKey = self.makePreferenceKey(for: key) else {
+            return defaultValue
+        }
+        
+        guard let rawValue = self.userDefaults.string(forKey: userDefaultsKey) else {
+            return defaultValue
+        }
+        
+        return Value(rawValue: rawValue) ?? defaultValue
+    }
+    
+    private func storeValue<Value: RawRepresentable>(
+        _ value: Value,
+        for key: PreferenceKey
+    ) where Value.RawValue == String {
+        guard let userDefaultsKey = self.makePreferenceKey(for: key) else { return }
+        self.userDefaults.set(value.rawValue, forKey: userDefaultsKey)
+    }
+    
+    private func makePreferenceKey(for key: PreferenceKey) -> String? {
         guard let uid = self.uidProvider.currentUID, uid.isEmpty == false else {
             return nil
         }
-
-        return "mote.preferences.size.\(uid)"
+        
+        return key.userDefaultsKey(for: uid)
     }
 }
