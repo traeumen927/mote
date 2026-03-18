@@ -17,11 +17,11 @@ enum AppearanceThemeOption: String, CaseIterable {
     var title: String {
         switch self {
         case .system:
-            return "시스템 설정"
+            return "System"
         case .light:
-            return "라이트 모드"
+            return "Light Mode"
         case .dark:
-            return "다크 모드"
+            return "Dark Mode"
         }
     }
 

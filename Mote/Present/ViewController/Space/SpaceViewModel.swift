@@ -6,12 +6,15 @@
 //
 
 import Foundation
+import RxSwift
+import RxCocoa
 
 final class SpaceViewModel {
     
     private let signOutUseCase: SignOutUseCase
-    private let fetchAppearanceThemeUseCase: FetchAppearanceThemeUseCase
     private let updateAppearanceThemeUseCase: UpdateAppearanceThemeUseCase
+    
+    let appearanceTheme: BehaviorRelay<AppearanceThemeOption>
     
     init(
         signOutUseCase: SignOutUseCase,
@@ -19,19 +22,18 @@ final class SpaceViewModel {
         updateAppearanceThemeUseCase: UpdateAppearanceThemeUseCase
     ) {
         self.signOutUseCase = signOutUseCase
-        self.fetchAppearanceThemeUseCase = fetchAppearanceThemeUseCase
         self.updateAppearanceThemeUseCase = updateAppearanceThemeUseCase
+        
+        let initialAppearanceTheme = fetchAppearanceThemeUseCase.execute()
+        self.appearanceTheme = BehaviorRelay(value: initialAppearanceTheme)
     }
     
     func signOut() throws {
         try self.signOutUseCase.execute()
     }
     
-    func fetchAppearanceTheme() -> AppearanceThemeOption {
-        self.fetchAppearanceThemeUseCase.execute()
-    }
-    
     func updateAppearanceTheme(_ theme: AppearanceThemeOption) {
         self.updateAppearanceThemeUseCase.execute(theme)
+        self.appearanceTheme.accept(theme)
     }
 }

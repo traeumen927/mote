@@ -7,10 +7,13 @@
 
 import UIKit
 import SnapKit
+import RxSwift
+import RxCocoa
 
 final class SpaceViewController: UIViewController {
     
     private let viewModel: SpaceViewModel
+    private let disposeBag = DisposeBag()
     
     weak var coordinator: SpaceCoordinating?
     
@@ -30,11 +33,12 @@ final class SpaceViewController: UIViewController {
     private lazy var tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .insetGrouped)
         tableView.backgroundColor = .clear
-        tableView.separatorInset = UIEdgeInsets(top: 0, left: 56, bottom: 0, right: 16)
-        tableView.rowHeight = 56
+        tableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.estimatedRowHeight = 56
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        //        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         return tableView
     }()
     
@@ -50,6 +54,7 @@ final class SpaceViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupLayout()
+        self.bind()
     }
     
     private func setupLayout() {
@@ -61,6 +66,37 @@ final class SpaceViewController: UIViewController {
         self.tableView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
+    }
+    
+    private func bind() {
+        self.viewModel.appearanceTheme
+            .distinctUntilChanged()
+            .observe(on: MainScheduler.instance)
+            .bind { [weak self] _ in
+                self?.reloadAppearanceRow()
+            }
+            .disposed(by: self.disposeBag)
+    }
+    
+    private func appearanceIndexPath() -> IndexPath {
+        guard let section = self.sections.firstIndex(where: { $0.contains(.appearance) }),
+              let row = self.sections[section].firstIndex(of: .appearance) else {
+            return IndexPath(row: 1, section: 1)
+        }
+        
+        return IndexPath(row: row, section: section)
+    }
+    
+    private func reloadAppearanceRow() {
+        let appearanceIndexPath = self.appearanceIndexPath()
+        
+        guard self.tableView.numberOfSections > appearanceIndexPath.section,
+              self.tableView.numberOfRows(inSection: appearanceIndexPath.section) > appearanceIndexPath.row else {
+            self.tableView.reloadData()
+            return
+        }
+        
+        self.tableView.reloadRows(at: [appearanceIndexPath], with: .none)
     }
     
     private func handleLogout() {
@@ -106,38 +142,63 @@ extension SpaceViewController: UITableViewDataSource {
         cellForRowAt indexPath: IndexPath
     ) -> UITableViewCell {
         let row = self.sections[indexPath.section][indexPath.row]
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        
-        var config = cell.defaultContentConfiguration()
-        config.textProperties.font = Typography.bodyLarge
-        config.textProperties.color = SemanticColor.textPrimary.uiColor
-        config.secondaryTextProperties.color = SemanticColor.textSecondary.uiColor
-        cell.accessoryType = .none
-        cell.selectionStyle = .default
         
         switch row {
-        case .profile:
-            config.text = ProfileSession.shared.currentProfile?.username ?? "User"
-            cell.accessoryType = .disclosureIndicator
-            
-        case .motes:
-            config.text = "Motes"
-            cell.accessoryType = .disclosureIndicator
-            
-        case .appearance:
-            config.text = "Appearance"
-            cell.accessoryType = .disclosureIndicator
-            
         case .logout:
-            config.text = "Sign Out"
-            config.textProperties.color = SemanticColor.accentStrong.uiColor
-            config.textProperties.alignment = .center
+            let identifier = "defaultCell"
+            let cell = tableView.dequeueReusableCell(withIdentifier: identifier)
+            ?? UITableViewCell(style: .default, reuseIdentifier: identifier)
+            
+            cell.backgroundColor = SemanticColor.bgGrouped.uiColor
+            cell.selectionStyle = .default
+            cell.accessoryType = .none
+            
+            cell.textLabel?.text = "Sign Out"
+            cell.textLabel?.textColor = SemanticColor.accentStrong.uiColor
+            cell.textLabel?.font = Typography.bodyLarge
+            cell.textLabel?.textAlignment = .center
+            
+            cell.detailTextLabel?.text = nil
+            
+            return cell
+            
+        default:
+            let identifier = "value1Cell"
+            let cell = tableView.dequeueReusableCell(withIdentifier: identifier)
+            ?? UITableViewCell(style: .value1, reuseIdentifier: identifier)
+            
+            cell.backgroundColor = SemanticColor.bgGrouped.uiColor
+            cell.selectionStyle = .default
+            cell.accessoryType = .none
+            
+            cell.textLabel?.font = Typography.bodyLarge
+            cell.textLabel?.textColor = SemanticColor.textPrimary.uiColor
+            cell.textLabel?.textAlignment = .left
+            
+            cell.detailTextLabel?.font = Typography.body
+            cell.detailTextLabel?.textColor = SemanticColor.textSecondary.uiColor
+            cell.detailTextLabel?.text = nil
+            
+            switch row {
+            case .profile:
+                cell.textLabel?.text = ProfileSession.shared.currentProfile?.username ?? "User"
+                cell.accessoryType = .disclosureIndicator
+                
+            case .motes:
+                cell.textLabel?.text = "Motes"
+                cell.accessoryType = .disclosureIndicator
+                
+            case .appearance:
+                cell.textLabel?.text = "Appearance"
+                cell.detailTextLabel?.text = self.viewModel.appearanceTheme.value.title
+                cell.accessoryType = .disclosureIndicator
+                
+            case .logout:
+                break
+            }
+            
+            return cell
         }
-        
-        cell.contentConfiguration = config
-        cell.backgroundColor = SemanticColor.bgGrouped.uiColor
-        
-        return cell
     }
 }
 
