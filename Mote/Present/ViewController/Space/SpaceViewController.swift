@@ -38,9 +38,10 @@ final class SpaceViewController: UIViewController {
         tableView.estimatedRowHeight = 56
         tableView.dataSource = self
         tableView.delegate = self
-        //        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         return tableView
     }()
+    
+    private lazy var appearanceMenuInteraction = UIEditMenuInteraction(delegate: self)
     
     init(viewModel: SpaceViewModel) {
         self.viewModel = viewModel
@@ -62,6 +63,7 @@ final class SpaceViewController: UIViewController {
         self.view.backgroundColor = SemanticColor.bgApp.uiColor
         
         self.view.addSubview(self.tableView)
+        self.tableView.addInteraction(self.appearanceMenuInteraction)
         
         self.tableView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
@@ -72,7 +74,8 @@ final class SpaceViewController: UIViewController {
         self.viewModel.appearanceTheme
             .distinctUntilChanged()
             .observe(on: MainScheduler.instance)
-            .bind { [weak self] _ in
+            .bind { [weak self] theme in
+                self?.coordinator?.applyAppearanceTheme(theme)
                 self?.reloadAppearanceRow()
             }
             .disposed(by: self.disposeBag)
@@ -95,8 +98,27 @@ final class SpaceViewController: UIViewController {
             self.tableView.reloadData()
             return
         }
-        
         self.tableView.reloadRows(at: [appearanceIndexPath], with: .none)
+    }
+    
+    private func appearanceMenu() -> UIMenu {
+        let actions = AppearanceThemeOption.allCases.map { theme in
+            UIAction(
+                title: theme.title,
+                state: theme == self.viewModel.appearanceTheme.value ? .on : .off
+            ) { [weak self] _ in
+                self?.viewModel.updateAppearanceTheme(theme)
+            }
+        }
+        
+        return UIMenu(title: "Appearance", options: .singleSelection, children: actions)
+    }
+    
+    private func presentAppearanceMenu(at indexPath: IndexPath) {
+        let cellRect = self.tableView.rectForRow(at: indexPath)
+        let sourcePoint = CGPoint(x: cellRect.maxX, y: cellRect.midY)
+        let configuration = UIEditMenuConfiguration(identifier: nil, sourcePoint: sourcePoint)
+        self.appearanceMenuInteraction.presentEditMenu(with: configuration)
     }
     
     private func handleLogout() {
@@ -217,7 +239,7 @@ extension SpaceViewController: UITableViewDelegate {
             self.coordinator?.showMotes()
             
         case .appearance:
-            return
+            self.presentAppearanceMenu(at: indexPath)
             
         case .logout:
             self.handleLogout()
@@ -227,5 +249,16 @@ extension SpaceViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
         guard section == 2 else { return nil }
         return "You will be signed out of this account."
+    }
+}
+
+extension SpaceViewController: UIEditMenuInteractionDelegate {
+    
+    func editMenuInteraction(
+        _ interaction: UIEditMenuInteraction,
+        menuFor configuration: UIEditMenuConfiguration,
+        suggestedActions: [UIMenuElement]
+    ) -> UIMenu? {
+        return self.appearanceMenu()
     }
 }

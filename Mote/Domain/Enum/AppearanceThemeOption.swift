@@ -19,9 +19,9 @@ enum AppearanceThemeOption: String, CaseIterable {
         case .system:
             return "System"
         case .light:
-            return "Light Mode"
+            return "Light"
         case .dark:
-            return "Dark Mode"
+            return "Dark"
         }
     }
 
