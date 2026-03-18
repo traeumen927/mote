@@ -52,6 +52,7 @@ final class MotesViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.spriteView.isPaused = false
+        self.driftScene.applyMoteSizeOption(self.viewModel.moteSizeOption.value)
         
         DispatchQueue.main.async { [weak self] in
             self?.applyRandomItems(resetExisting: true)
@@ -89,6 +90,15 @@ final class MotesViewController: UIViewController {
     }
     
     private func bind() {
+        
+        self.viewModel.moteSizeOption
+            .distinctUntilChanged()
+            .observe(on: MainScheduler.instance)
+            .bind { [weak self] sizeOption in
+                self?.driftScene.applyMoteSizeOption(sizeOption)
+            }
+            .disposed(by: self.disposeBag)
+        
         self.refreshBarButtonItem.rx.tap
             .bind(onNext: { [weak self] in
                 guard let self else { return }
@@ -121,7 +131,7 @@ final class MotesViewController: UIViewController {
     }
     
     private func presentEditBottomSheet() {
-        let editViewController = MotesEditViewController()
+        let editViewController = MotesEditViewController(viewModel: self.viewModel)
         editViewController.modalPresentationStyle = .automatic
         
         if let sheet = editViewController.sheetPresentationController {

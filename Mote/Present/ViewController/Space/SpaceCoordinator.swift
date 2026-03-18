@@ -38,7 +38,16 @@ final class SpaceCoordinator: SpaceCoordinating {
     }
     
     func showMotes() {
-        let motesViewController = MotesViewController(viewModel: MotesViewModel())
+        let motePreferencesRepository = MotePreferencesRepositoryImpl(uidProvider: ProfileSession.shared)
+        let fetchMoteSizeUseCase = FetchMoteSizeUseCase(motePreferencesRepository: motePreferencesRepository)
+        let updateMoteSizeUseCase = UpdateMoteSizeUseCase(motePreferencesRepository: motePreferencesRepository)
+        let motesViewController = MotesViewController(
+            viewModel: MotesViewModel(
+                fetchMoteSizeUseCase: fetchMoteSizeUseCase,
+                updateMoteSizeUseCase: updateMoteSizeUseCase
+            )
+        )
+        
         motesViewController.hidesBottomBarWhenPushed = true
         self.navigationController?.pushViewController(motesViewController, animated: true)
     }

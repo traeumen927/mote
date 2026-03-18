@@ -14,6 +14,17 @@ enum MoteSizeOption: String, CaseIterable {
     
     static let `default`: MoteSizeOption = .medium
     
+    var title: String {
+        switch self {
+        case .small:
+            return "Small"
+        case .medium:
+            return "Medium"
+        case .large:
+            return "Large"
+        }
+    }
+    
     var fontSize: CGFloat {
         switch self {
         case .small:

@@ -38,6 +38,7 @@ final class DriftViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.spriteView.isPaused = false
+        self.viewModel.fetchMoteSizeOption()
         self.viewModel.fetchRecentEmotions()
     }
     
@@ -71,8 +72,6 @@ final class DriftViewController: UIViewController {
     }
     
     private func bind() {
-        self.viewModel.fetchMoteSizeOption()
-        
         self.viewModel.moteSizeOption
             .asDriver()
             .drive(onNext: { [weak self] sizeOption in
