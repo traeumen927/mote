@@ -123,10 +123,12 @@ final class DriftScene: SKScene {
     }
     
     func applyGravityOption(_ gravityOption: GravityOption) {
-        guard self.gravityOption != gravityOption else { return }
+        let isSameOption = (self.gravityOption == gravityOption)
         
         self.gravityOption = gravityOption
         self.physicsWorld.gravity = gravityOption.gravityVector
+        
+        guard isSameOption == false else { return }
         self.restartWithCurrentEmotions()
     }
     
