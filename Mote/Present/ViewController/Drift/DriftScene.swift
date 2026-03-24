@@ -35,6 +35,9 @@ final class DriftScene: SKScene {
     /// 중력 프리셋
     private var gravityOption: GravityOption = .default
     
+    /// 마지막으로 반영한 감정 목록. 설정 변경 시 현재 목록으로 재시작하기 위해 보관.
+    private var currentEmotions: [EmotionRecord] = []
+    
     private struct ExistingCircle {
         let position: CGPoint
         let radius: CGFloat
@@ -67,6 +70,8 @@ final class DriftScene: SKScene {
     
     /// 최신 감정 목록을 기준으로 노드를 추가/갱신/삭제한다.
     func apply(emotions: [EmotionRecord]) {
+        self.currentEmotions = emotions
+        
         let nextRecordsByKey = Dictionary(uniqueKeysWithValues: emotions.map { ($0.dateKey, $0) })
         let nextKeys = Set(nextRecordsByKey.keys)
         let currentKeys = Set(self.emotionNodesByDateKey.keys)
@@ -104,20 +109,25 @@ final class DriftScene: SKScene {
         guard self.moteSizeOption != sizeOption else { return }
         
         self.moteSizeOption = sizeOption
-        self.emotionNodesByDateKey.values.forEach { node in
-            node.fontSize = sizeOption.fontSize
-            self.rebuildPhysicsBody(for: node)
-        }
+        self.restartWithCurrentEmotions()
     }
     
     func applyGravityOption(_ gravityOption: GravityOption) {
+        guard self.gravityOption != gravityOption else { return }
+        
         self.gravityOption = gravityOption
         self.physicsWorld.gravity = gravityOption.gravityVector
+        self.restartWithCurrentEmotions()
     }
     
     private func removeAllEmotionNodes() {
         self.emotionNodesByDateKey.values.forEach { $0.removeFromParent() }
         self.emotionNodesByDateKey.removeAll(keepingCapacity: true)
+    }
+    
+    /// 설정값(크기/중력/바운스)이 변경되면 현재 감정 목록으로 간단하게 재시작한다.
+    private func restartWithCurrentEmotions() {
+        self.resetAndApply(emotions: self.currentEmotions)
     }
     
     /// Scene 전체 외곽에 edgeLoop를 만들어 노드가 화면 밖으로 빠져나가지 않게 한다.
