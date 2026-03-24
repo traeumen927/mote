@@ -17,8 +17,8 @@ final class DriftScene: SKScene {
     /// edgeLoop 물리 바디를 붙여 월드 경계를 담당하는 노드.
     private let worldBody = SKNode()
     
-    /// dateKey 기준으로 현재 화면의 감정 라벨 노드를 관리.
-    private var emotionNodesByDateKey: [String: SKLabelNode] = [:]
+    /// dateKey 기준으로 현재 화면의 감정 mote 노드를 관리.
+    private var emotionNodesByDateKey: [String: SKShapeNode] = [:]
     
     /// 초기 회전 속도 랜덤 범위
     private let initialAngularVelocityRange: ClosedRange<CGFloat> = 1.2...4.2
@@ -162,19 +162,20 @@ final class DriftScene: SKScene {
         self.worldBody.physicsBody = body
     }
     
-    /// 신규 감정에 대응하는 라벨 노드를 만들고 초기 물리 상태를 주입.
-    private func makeNode(for record: EmotionRecord) -> SKLabelNode {
-        let node = SKLabelNode(text: record.emotion)
-        node.fontSize = self.moteSizeOption.fontSize
-        node.fontColor = .white
-        node.verticalAlignmentMode = .center
-        node.horizontalAlignmentMode = .center
+    /// 신규 감정에 대응하는 원형 mote 노드를 만들고 초기 물리 상태를 주입.
+    private func makeNode(for record: EmotionRecord) -> SKShapeNode {
+        let nodeRadius = self.moteRadius(for: record.emotion)
+        let node = SKShapeNode(circleOfRadius: nodeRadius)
+        node.fillColor = .black.withAlphaComponent(0.28)
+        node.strokeColor = .white.withAlphaComponent(0.2)
+        node.lineWidth = 1
         node.zPosition = 1
+        
+        let labelNode = self.makeLabelNode(text: record.emotion)
+        node.addChild(labelNode)
         
         // 생성 시점의 시각적 회전 각도도 랜덤으로 부여.
         node.zRotation = CGFloat.random(in: -(.pi / 8)...(.pi / 8))
-        
-        let nodeRadius = self.moteRadius(for: node)
         node.position = self.makeSpawnPosition(nodeRadius: nodeRadius)
         node.physicsBody = self.makeMotePhysicsBody(radius: nodeRadius)
         
@@ -184,15 +185,19 @@ final class DriftScene: SKScene {
     }
     
     /// 텍스트가 바뀐 노드는 물리 바디 반경도 달라질 수 있어 재생성한다.
-    private func update(node: SKLabelNode, with record: EmotionRecord) {
-        if node.text != record.emotion {
-            node.text = record.emotion
-            
-            self.rebuildPhysicsBody(for: node)
-            
-            // 텍스트/바디 갱신 후에도 초기 움직임을 다시 주어 정적인 상태를 피함.
-            self.applyInitialImpulse(to: node)
-        }
+    private func update(node: SKShapeNode, with record: EmotionRecord) {
+        guard
+            let labelNode = node.childNode(withName: "emotionLabel") as? SKLabelNode,
+            labelNode.text != record.emotion
+        else { return }
+        
+        labelNode.text = record.emotion
+        let updatedRadius = self.moteRadius(for: record.emotion)
+        node.path = CGPath(ellipseIn: CGRect(x: -updatedRadius, y: -updatedRadius, width: updatedRadius * 2, height: updatedRadius * 2), transform: nil)
+        self.rebuildPhysicsBody(for: node)
+        
+        // 텍스트/바디 갱신 후에도 초기 움직임을 다시 주어 정적인 상태를 피함.
+        self.applyInitialImpulse(to: node)
     }
     
     /// 비가시 상단 영역 안에서 기존 아이템들과 겹치지 않는 스폰 좌표를 만든다.
@@ -257,7 +262,7 @@ final class DriftScene: SKScene {
     }
     
     /// 노드 생성/갱신 시점에만 1회 초기 이동량/회전값을 부여한다.
-    private func applyInitialImpulse(to node: SKLabelNode) {
+    private func applyInitialImpulse(to node: SKShapeNode) {
         guard let body = node.physicsBody else { return }
         
         // 초기에 위쪽 방향으로 날아오르되, 좌우 편차는 랜덤.
@@ -272,8 +277,16 @@ final class DriftScene: SKScene {
         body.angularVelocity = randomAngularVelocity * spinDirection
     }
     
-    private func moteRadius(for node: SKLabelNode) -> CGFloat {
-        max(node.frame.width, node.frame.height) * 0.52
+    private func moteRadius(for node: SKShapeNode) -> CGFloat {
+        max(node.frame.width, node.frame.height) * 0.5
+    }
+    
+    private func moteRadius(for emotion: String) -> CGFloat {
+        let labelNode = self.makeLabelNode(text: emotion)
+        let contentRadius = max(labelNode.frame.width, labelNode.frame.height) * 0.62
+        let minimumRadius = self.moteSizeOption.fontSize * 0.92
+        
+        return max(contentRadius, minimumRadius)
     }
     
     private func makeMotePhysicsBody(radius: CGFloat) -> SKPhysicsBody {
@@ -289,12 +302,23 @@ final class DriftScene: SKScene {
         return body
     }
     
-    private func rebuildPhysicsBody(for node: SKLabelNode) {
+    private func rebuildPhysicsBody(for node: SKShapeNode) {
         let currentVelocity = node.physicsBody?.velocity
         let currentAngularVelocity = node.physicsBody?.angularVelocity
         
         node.physicsBody = self.makeMotePhysicsBody(radius: self.moteRadius(for: node))
         node.physicsBody?.velocity = currentVelocity ?? .zero
         node.physicsBody?.angularVelocity = currentAngularVelocity ?? 0
+    }
+    
+    private func makeLabelNode(text: String) -> SKLabelNode {
+        let node = SKLabelNode(text: text)
+        node.name = "emotionLabel"
+        node.fontSize = self.moteSizeOption.fontSize
+        node.fontColor = .white
+        node.verticalAlignmentMode = .center
+        node.horizontalAlignmentMode = .center
+        
+        return node
     }
 }
