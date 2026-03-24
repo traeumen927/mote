@@ -23,6 +23,18 @@ final class DriftScene: SKScene {
     /// 초기 회전 속도 랜덤 범위
     private let initialAngularVelocityRange: ClosedRange<CGFloat> = 1.2...4.2
     
+    /// 폭죽처럼 위쪽으로 쏘아 올릴 때 사용할 초기 발사 속도 범위(pt/s).
+    private let launchSpeedRange: ClosedRange<CGFloat> = 500...800
+    
+    /// 발사 각도 편차 범위(라디안). 기준은 정위(90도)이며 좌우로 랜덤 편차를 준다.
+    private let launchAngleOffsetRange: ClosedRange<CGFloat> = -(.pi / 3)...(.pi / 3)
+    
+    /// 발사 직후 짧은 시간 동안 적용할 난류(불규칙 흔들림) 지속 시간.
+    private let launchTurbulenceDuration: TimeInterval = 2.85
+    
+    /// 난류 강도 범위. 값이 클수록 좌우/상하로 더 불규칙하게 흔들린다.
+    private let launchTurbulenceImpulseRange: ClosedRange<CGFloat> = 1.35...3.35
+    
     /// 화면 위(비가시 영역) 스폰 공간 높이.
     private let hiddenSpawnAreaHeight: CGFloat = 320
     
@@ -274,11 +286,35 @@ final class DriftScene: SKScene {
     private func applyInitialImpulse(to node: SKShapeNode) {
         guard let body = node.physicsBody else { return }
         
-        // 초기에 위쪽 방향으로 날아오르되, 좌우 편차는 랜덤.
-        let angle = CGFloat.random(in: (.pi * 0.2)...(.pi * 0.8))
-        let magnitude = CGFloat.random(in: 1.9...2.8)
-        let impulse = CGVector(dx: cos(angle) * magnitude, dy: sin(angle) * magnitude)
-        body.applyImpulse(impulse)
+        // 1) 폭죽처럼 "위쪽 기준 + 좌우 편차"로 발사 속도를 즉시 부여한다.
+                // SpriteKit 좌표계에서 90도(π/2)는 위쪽 방향.
+                let launchAngle = (.pi / 2) + CGFloat.random(in: self.launchAngleOffsetRange)
+                let launchSpeed = CGFloat.random(in: self.launchSpeedRange)
+                let launchVelocity = CGVector(
+                    dx: cos(launchAngle) * launchSpeed,
+                    dy: sin(launchAngle) * launchSpeed
+                )
+                body.velocity = launchVelocity
+                
+                // 2) 각 노드별로 수평/수직 미세 임펄스를 추가해 완전히 동일한 포물선을 피한다.
+                let sideImpulse = CGFloat.random(in: -1.4...1.4)
+                let verticalImpulse = CGFloat.random(in: 0.2...1.2)
+                body.applyImpulse(CGVector(dx: sideImpulse, dy: verticalImpulse))
+                
+                // 3) 발사 직후 짧은 난류를 넣어 "불규칙하게 떨어지는" 느낌을 만든다.
+                // 시간이 지날수록 강도가 줄어들도록 감쇠시킨다.
+                let turbulenceAction = SKAction.customAction(withDuration: self.launchTurbulenceDuration) { [weak node] _, elapsed in
+                    guard let node, let body = node.physicsBody else { return }
+                    let progress = CGFloat(elapsed / self.launchTurbulenceDuration)
+                    let attenuation = max(0.12, 1 - progress)
+                    let turbulence = CGFloat.random(in: self.launchTurbulenceImpulseRange) * attenuation
+                    let dx = CGFloat.random(in: -1...1) * turbulence
+                    let dy = CGFloat.random(in: -0.45...0.45) * turbulence
+                    body.applyImpulse(CGVector(dx: dx, dy: dy))
+                }
+                
+                node.removeAction(forKey: "launchTurbulence")
+                node.run(turbulenceAction, withKey: "launchTurbulence")
         
         // 회전값 자체를 랜덤으로 지정(방향/세기 모두 랜덤).
         let randomAngularVelocity = CGFloat.random(in: self.initialAngularVelocityRange)

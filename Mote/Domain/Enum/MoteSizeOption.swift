@@ -28,11 +28,11 @@ enum MoteSizeOption: String, CaseIterable {
     var fontSize: CGFloat {
         switch self {
         case .small:
-            38
-        case .medium:
             50
+        case .medium:
+            60
         case .large:
-            62
+            70
         }
     }
 }
