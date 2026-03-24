@@ -36,6 +36,14 @@ final class MotePreferencesRepositoryImpl: MotePreferencesRepository {
         self.storeValue(theme, for: .theme)
     }
     
+    func fetchGravityOption() -> GravityOption {
+        self.fetchValue(for: .gravity, defaultValue: .default)
+    }
+    
+    func updateGravityOption(_ gravityOption: GravityOption) {
+        self.storeValue(gravityOption, for: .gravity)
+    }
+    
     private func fetchValue<Value: RawRepresentable>(
         for key: PreferenceKey,
         defaultValue: Value

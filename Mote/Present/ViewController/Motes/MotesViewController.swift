@@ -53,6 +53,7 @@ final class MotesViewController: UIViewController {
         super.viewWillAppear(animated)
         self.spriteView.isPaused = false
         self.driftScene.applyMoteSizeOption(self.viewModel.moteSizeOption.value)
+        self.driftScene.applyGravityOption(self.viewModel.gravityOption.value)
         
         DispatchQueue.main.async { [weak self] in
             self?.applyRandomItems(resetExisting: true)
@@ -96,6 +97,14 @@ final class MotesViewController: UIViewController {
             .observe(on: MainScheduler.instance)
             .bind { [weak self] sizeOption in
                 self?.driftScene.applyMoteSizeOption(sizeOption)
+            }
+            .disposed(by: self.disposeBag)
+        
+        self.viewModel.gravityOption
+            .distinctUntilChanged()
+            .observe(on: MainScheduler.instance)
+            .bind { [weak self] gravityOption in
+                self?.driftScene.applyGravityOption(gravityOption)
             }
             .disposed(by: self.disposeBag)
         

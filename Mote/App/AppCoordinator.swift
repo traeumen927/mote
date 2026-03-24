@@ -160,12 +160,14 @@ final class AppCoordinator {
         let signOutUseCase = SignOutUseCase(authRepository: self.authRepository)
         let motePreferencesRepository = MotePreferencesRepositoryImpl(uidProvider: ProfileSession.shared)
         let fetchMoteSizeUseCase = FetchMoteSizeUseCase(motePreferencesRepository: motePreferencesRepository)
+        let fetchGravityOptionUseCase = FetchGravityOptionUseCase(motePreferencesRepository: motePreferencesRepository)
         let fetchAppearanceThemeUseCase = FetchAppearanceThemeUseCase(motePreferencesRepository: motePreferencesRepository)
         let updateAppearanceThemeUseCase = UpdateAppearanceThemeUseCase(motePreferencesRepository: motePreferencesRepository)
         
         let viewModel = MainTabViewModel(
             signOutUseCase: signOutUseCase,
             fetchMoteSizeUseCase: fetchMoteSizeUseCase,
+            fetchGravityOptionUseCase: fetchGravityOptionUseCase,
             fetchAppearanceThemeUseCase: fetchAppearanceThemeUseCase,
             updateAppearanceThemeUseCase: updateAppearanceThemeUseCase,
             firestore: Firestore.firestore(),

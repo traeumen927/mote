@@ -17,15 +17,15 @@ final class MotesEditViewController: UIViewController {
     
     private enum Row: Int, CaseIterable {
         case size
-        case appearance2
+        case gravity
         case appearance3
         
         var title: String {
             switch self {
             case .size:
                 return "Size"
-            case .appearance2:
-                return "appearance2"
+            case .gravity:
+                return "Gravity"
             case .appearance3:
                 return "appearance3"
             }
@@ -44,6 +44,8 @@ final class MotesEditViewController: UIViewController {
     }()
     
     private lazy var sizeMenuInteraction = UIEditMenuInteraction(delegate: self)
+    private lazy var gravityMenuInteraction = UIEditMenuInteraction(delegate: self)
+    private var activeMenuRow: Row?
     
     init(viewModel: MotesViewModel) {
         self.viewModel = viewModel
@@ -66,6 +68,7 @@ final class MotesEditViewController: UIViewController {
         
         self.view.addSubview(self.tableView)
         self.tableView.addInteraction(self.sizeMenuInteraction)
+        self.tableView.addInteraction(self.gravityMenuInteraction)
         
         self.tableView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
@@ -77,24 +80,32 @@ final class MotesEditViewController: UIViewController {
             .distinctUntilChanged()
             .observe(on: MainScheduler.instance)
             .bind { [weak self] _ in
-                self?.reloadSizeRow()
+                self?.reloadRow(.size)
+            }
+            .disposed(by: self.disposeBag)
+        
+        self.viewModel.gravityOption
+            .distinctUntilChanged()
+            .observe(on: MainScheduler.instance)
+            .bind { [weak self] _ in
+                self?.reloadRow(.gravity)
             }
             .disposed(by: self.disposeBag)
     }
     
-    private func sizeIndexPath() -> IndexPath {
-        return IndexPath(row: 0, section: 0)
+    private func indexPath(for row: Row) -> IndexPath {
+        return IndexPath(row: row.rawValue, section: 0)
     }
     
-    private func reloadSizeRow() {
-        let sizeIndexPath = self.sizeIndexPath()
+    private func reloadRow(_ row: Row) {
+        let indexPath = self.indexPath(for: row)
         
-        guard self.tableView.numberOfSections > sizeIndexPath.section,
-              self.tableView.numberOfRows(inSection: sizeIndexPath.section) > sizeIndexPath.row else {
+        guard self.tableView.numberOfSections > indexPath.section,
+              self.tableView.numberOfRows(inSection: indexPath.section) > indexPath.row else {
             self.tableView.reloadData()
             return
         }
-        self.tableView.reloadRows(at: [sizeIndexPath], with: .none)
+        self.tableView.reloadRows(at: [indexPath], with: .none)
     }
     
     private func sizeMenu() -> UIMenu {
@@ -110,11 +121,33 @@ final class MotesEditViewController: UIViewController {
         return UIMenu(title: "Size", options: .singleSelection, children: actions)
     }
     
-    private func presentSizeMenu(at indexPath: IndexPath) {
+    private func gravityMenu() -> UIMenu {
+        let actions = GravityOption.allCases.map { gravityOption in
+            UIAction(
+                title: gravityOption.title,
+                state: gravityOption == self.viewModel.gravityOption.value ? .on : .off
+            ) { [weak self] _ in
+                self?.viewModel.updateGravityOption(gravityOption)
+            }
+        }
+        
+        return UIMenu(title: "Gravity", options: .singleSelection, children: actions)
+    }
+    
+    private func presentMenu(at indexPath: IndexPath, for row: Row) {
         let cellRect = self.tableView.rectForRow(at: indexPath)
         let sourcePoint = CGPoint(x: cellRect.maxX, y: cellRect.midY)
         let configuration = UIEditMenuConfiguration(identifier: nil, sourcePoint: sourcePoint)
-        self.sizeMenuInteraction.presentEditMenu(with: configuration)
+        self.activeMenuRow = row
+        
+        switch row {
+        case .size:
+            self.sizeMenuInteraction.presentEditMenu(with: configuration)
+        case .gravity:
+            self.gravityMenuInteraction.presentEditMenu(with: configuration)
+        case .appearance3:
+            break
+        }
     }
 }
 
@@ -153,7 +186,9 @@ extension MotesEditViewController: UITableViewDataSource {
         switch row {
         case .size:
             cell.detailTextLabel?.text = self.viewModel.moteSizeOption.value.title
-        case .appearance2, .appearance3:
+        case .gravity:
+            cell.detailTextLabel?.text = self.viewModel.gravityOption.value.title
+        case .appearance3:
             break
         }
         
@@ -169,9 +204,9 @@ extension MotesEditViewController: UITableViewDelegate {
         guard let row = Row(rawValue: indexPath.row) else { return }
         
         switch row {
-        case .size:
-            self.presentSizeMenu(at: indexPath)
-        case .appearance2, .appearance3:
+        case .size, .gravity:
+            self.presentMenu(at: indexPath, for: row)
+        case .appearance3:
             break
         }
     }
@@ -184,6 +219,13 @@ extension MotesEditViewController: UIEditMenuInteractionDelegate {
         menuFor configuration: UIEditMenuConfiguration,
         suggestedActions: [UIMenuElement]
     ) -> UIMenu? {
-        return self.sizeMenu()
+        switch self.activeMenuRow {
+        case .size:
+            return self.sizeMenu()
+        case .gravity:
+            return self.gravityMenu()
+        case .appearance3, .none:
+            return nil
+        }
     }
 }

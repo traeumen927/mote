@@ -16,6 +16,7 @@ final class MainTabViewModel {
     init(
         signOutUseCase: SignOutUseCase,
         fetchMoteSizeUseCase: FetchMoteSizeUseCase,
+        fetchGravityOptionUseCase: FetchGravityOptionUseCase,
         fetchAppearanceThemeUseCase: FetchAppearanceThemeUseCase,
         updateAppearanceThemeUseCase: UpdateAppearanceThemeUseCase,
         firestore: Firestore,
@@ -44,7 +45,8 @@ final class MainTabViewModel {
         
         self.driftViewModel = DriftViewModel(
             fetchRecentEmotionsUseCase: fetchRecentEmotionsUseCase,
-            fetchMoteSizeUseCase: fetchMoteSizeUseCase
+            fetchMoteSizeUseCase: fetchMoteSizeUseCase,
+            fetchGravityOptionUseCase: fetchGravityOptionUseCase
         )
         self.spaceViewModel = SpaceViewModel(
             signOutUseCase: signOutUseCase,

@@ -12,22 +12,33 @@ import RxCocoa
 final class MotesViewModel {
     
     let moteSizeOption: BehaviorRelay<MoteSizeOption>
+    let gravityOption: BehaviorRelay<GravityOption>
     
     private let fetchMoteSizeUseCase: FetchMoteSizeUseCase
     private let updateMoteSizeUseCase: UpdateMoteSizeUseCase
+    private let updateGravityOptionUseCase: UpdateGravityOptionUseCase
     
     init(
         fetchMoteSizeUseCase: FetchMoteSizeUseCase,
-        updateMoteSizeUseCase: UpdateMoteSizeUseCase
+        updateMoteSizeUseCase: UpdateMoteSizeUseCase,
+        fetchGravityOptionUseCase: FetchGravityOptionUseCase,
+        updateGravityOptionUseCase: UpdateGravityOptionUseCase
     ) {
         self.fetchMoteSizeUseCase = fetchMoteSizeUseCase
         self.updateMoteSizeUseCase = updateMoteSizeUseCase
+        self.updateGravityOptionUseCase = updateGravityOptionUseCase
         self.moteSizeOption = BehaviorRelay(value: fetchMoteSizeUseCase.execute())
+        self.gravityOption = BehaviorRelay(value: fetchGravityOptionUseCase.execute())
     }
     
     func updateMoteSizeOption(_ sizeOption: MoteSizeOption) {
         self.updateMoteSizeUseCase.execute(sizeOption)
         self.moteSizeOption.accept(sizeOption)
+    }
+    
+    func updateGravityOption(_ gravityOption: GravityOption) {
+        self.updateGravityOptionUseCase.execute(gravityOption)
+        self.gravityOption.accept(gravityOption)
     }
     
     func makeRandomEmotionRecords(limit: Int) -> [EmotionRecord] {

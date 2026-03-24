@@ -32,6 +32,9 @@ final class DriftScene: SKScene {
     /// mote 사이즈
     private var moteSizeOption: MoteSizeOption = .default
     
+    /// 중력 프리셋
+    private var gravityOption: GravityOption = .default
+    
     private struct ExistingCircle {
         let position: CGPoint
         let radius: CGFloat
@@ -48,7 +51,7 @@ final class DriftScene: SKScene {
         self.scaleMode = .resizeFill
         
         // 중력 방향/세기 설정: 노드가 아래로 낙하.
-        self.physicsWorld.gravity = CGVector(dx: 0, dy: -3.8)
+        self.applyGravityOption(self.gravityOption)
         self.physicsWorld.speed = 1
         
         self.physicsBody = nil
@@ -107,6 +110,11 @@ final class DriftScene: SKScene {
         }
     }
     
+    func applyGravityOption(_ gravityOption: GravityOption) {
+        self.gravityOption = gravityOption
+        self.physicsWorld.gravity = gravityOption.gravityVector
+    }
+    
     private func removeAllEmotionNodes() {
         self.emotionNodesByDateKey.values.forEach { $0.removeFromParent() }
         self.emotionNodesByDateKey.removeAll(keepingCapacity: true)
@@ -137,7 +145,6 @@ final class DriftScene: SKScene {
     /// 신규 감정에 대응하는 라벨 노드를 만들고 초기 물리 상태를 주입.
     private func makeNode(for record: EmotionRecord) -> SKLabelNode {
         let node = SKLabelNode(text: record.emotion)
-        node.fontSize = 50
         node.fontSize = self.moteSizeOption.fontSize
         node.fontColor = .white
         node.verticalAlignmentMode = .center

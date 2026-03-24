@@ -13,4 +13,7 @@ protocol MotePreferencesRepository {
     
     func fetchAppearanceTheme() -> AppearanceThemeOption
     func updateAppearanceTheme(_ theme: AppearanceThemeOption)
+    
+    func fetchGravityOption() -> GravityOption
+    func updateGravityOption(_ gravityOption: GravityOption)
 }
