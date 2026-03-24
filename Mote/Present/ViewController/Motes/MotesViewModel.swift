@@ -13,22 +13,28 @@ final class MotesViewModel {
     
     let moteSizeOption: BehaviorRelay<MoteSizeOption>
     let gravityOption: BehaviorRelay<GravityOption>
+    let bounceOption: BehaviorRelay<BounceOption>
     
     private let fetchMoteSizeUseCase: FetchMoteSizeUseCase
     private let updateMoteSizeUseCase: UpdateMoteSizeUseCase
     private let updateGravityOptionUseCase: UpdateGravityOptionUseCase
+    private let updateBounceOptionUseCase: UpdateBounceOptionUseCase
     
     init(
         fetchMoteSizeUseCase: FetchMoteSizeUseCase,
         updateMoteSizeUseCase: UpdateMoteSizeUseCase,
         fetchGravityOptionUseCase: FetchGravityOptionUseCase,
-        updateGravityOptionUseCase: UpdateGravityOptionUseCase
+        updateGravityOptionUseCase: UpdateGravityOptionUseCase,
+        fetchBounceOptionUseCase: FetchBounceOptionUseCase,
+        updateBounceOptionUseCase: UpdateBounceOptionUseCase
     ) {
         self.fetchMoteSizeUseCase = fetchMoteSizeUseCase
         self.updateMoteSizeUseCase = updateMoteSizeUseCase
         self.updateGravityOptionUseCase = updateGravityOptionUseCase
+        self.updateBounceOptionUseCase = updateBounceOptionUseCase
         self.moteSizeOption = BehaviorRelay(value: fetchMoteSizeUseCase.execute())
         self.gravityOption = BehaviorRelay(value: fetchGravityOptionUseCase.execute())
+        self.bounceOption = BehaviorRelay(value: fetchBounceOptionUseCase.execute())
     }
     
     func updateMoteSizeOption(_ sizeOption: MoteSizeOption) {
@@ -39,6 +45,11 @@ final class MotesViewModel {
     func updateGravityOption(_ gravityOption: GravityOption) {
         self.updateGravityOptionUseCase.execute(gravityOption)
         self.gravityOption.accept(gravityOption)
+    }
+    
+    func updateBounceOption(_ bounceOption: BounceOption) {
+        self.updateBounceOptionUseCase.execute(bounceOption)
+        self.bounceOption.accept(bounceOption)
     }
     
     func makeRandomEmotionRecords(limit: Int) -> [EmotionRecord] {

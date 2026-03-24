@@ -15,20 +15,24 @@ final class DriftViewModel {
     let recentEmotions = BehaviorRelay<[EmotionRecord]>(value: [])
     let moteSizeOption = BehaviorRelay<MoteSizeOption>(value: .default)
     let gravityOption = BehaviorRelay<GravityOption>(value: .default)
+    let bounceOption = BehaviorRelay<BounceOption>(value: .default)
     let fetchFailed = PublishRelay<Error>()
     
     private let fetchRecentEmotionsUseCase: FetchRecentEmotionsUseCase
     private let fetchMoteSizeUseCase: FetchMoteSizeUseCase
     private let fetchGravityOptionUseCase: FetchGravityOptionUseCase
+    private let fetchBounceOptionUseCase: FetchBounceOptionUseCase
     private var activeRequestID: UUID?
     
     init(fetchRecentEmotionsUseCase: FetchRecentEmotionsUseCase,
          fetchMoteSizeUseCase: FetchMoteSizeUseCase,
-         fetchGravityOptionUseCase: FetchGravityOptionUseCase
+         fetchGravityOptionUseCase: FetchGravityOptionUseCase,
+                 fetchBounceOptionUseCase: FetchBounceOptionUseCase
     ) {
         self.fetchRecentEmotionsUseCase = fetchRecentEmotionsUseCase
         self.fetchMoteSizeUseCase = fetchMoteSizeUseCase
         self.fetchGravityOptionUseCase = fetchGravityOptionUseCase
+        self.fetchBounceOptionUseCase = fetchBounceOptionUseCase
     }
     
     func fetchRecentEmotions() {
@@ -60,6 +64,7 @@ final class DriftViewModel {
     func fetchMotePreferences() {
         self.moteSizeOption.accept(self.fetchMoteSizeUseCase.execute())
         self.gravityOption.accept(self.fetchGravityOptionUseCase.execute())
+        self.bounceOption.accept(self.fetchBounceOptionUseCase.execute())
     }
     
     func cancelOngoingEventsAndClearItems() {

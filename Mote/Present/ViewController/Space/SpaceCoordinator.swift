@@ -43,13 +43,17 @@ final class SpaceCoordinator: SpaceCoordinating {
         let updateMoteSizeUseCase = UpdateMoteSizeUseCase(motePreferencesRepository: motePreferencesRepository)
         let fetchGravityOptionUseCase = FetchGravityOptionUseCase(motePreferencesRepository: motePreferencesRepository)
         let updateGravityOptionUseCase = UpdateGravityOptionUseCase(motePreferencesRepository: motePreferencesRepository)
+        let fetchBounceOptionUseCase = FetchBounceOptionUseCase(motePreferencesRepository: motePreferencesRepository)
+        let updateBounceOptionUseCase = UpdateBounceOptionUseCase(motePreferencesRepository: motePreferencesRepository)
         
         let motesViewController = MotesViewController(
             viewModel: MotesViewModel(
                 fetchMoteSizeUseCase: fetchMoteSizeUseCase,
                 updateMoteSizeUseCase: updateMoteSizeUseCase,
                 fetchGravityOptionUseCase: fetchGravityOptionUseCase,
-                updateGravityOptionUseCase: updateGravityOptionUseCase
+                updateGravityOptionUseCase: updateGravityOptionUseCase,
+                fetchBounceOptionUseCase: fetchBounceOptionUseCase,
+                updateBounceOptionUseCase: updateBounceOptionUseCase
             )
         )
         

@@ -16,4 +16,7 @@ protocol MotePreferencesRepository {
     
     func fetchGravityOption() -> GravityOption
     func updateGravityOption(_ gravityOption: GravityOption)
+    
+    func fetchBounceOption() -> BounceOption
+    func updateBounceOption(_ bounceOption: BounceOption)
 }

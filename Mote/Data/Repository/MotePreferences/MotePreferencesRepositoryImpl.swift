@@ -44,6 +44,14 @@ final class MotePreferencesRepositoryImpl: MotePreferencesRepository {
         self.storeValue(gravityOption, for: .gravity)
     }
     
+    func fetchBounceOption() -> BounceOption {
+        self.fetchValue(for: .bounce, defaultValue: .default)
+    }
+    
+    func updateBounceOption(_ bounceOption: BounceOption) {
+        self.storeValue(bounceOption, for: .bounce)
+    }
+    
     private func fetchValue<Value: RawRepresentable>(
         for key: PreferenceKey,
         defaultValue: Value

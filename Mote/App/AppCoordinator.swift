@@ -161,6 +161,7 @@ final class AppCoordinator {
         let motePreferencesRepository = MotePreferencesRepositoryImpl(uidProvider: ProfileSession.shared)
         let fetchMoteSizeUseCase = FetchMoteSizeUseCase(motePreferencesRepository: motePreferencesRepository)
         let fetchGravityOptionUseCase = FetchGravityOptionUseCase(motePreferencesRepository: motePreferencesRepository)
+        let fetchBounceOptionUseCase = FetchBounceOptionUseCase(motePreferencesRepository: motePreferencesRepository)
         let fetchAppearanceThemeUseCase = FetchAppearanceThemeUseCase(motePreferencesRepository: motePreferencesRepository)
         let updateAppearanceThemeUseCase = UpdateAppearanceThemeUseCase(motePreferencesRepository: motePreferencesRepository)
         
@@ -168,6 +169,7 @@ final class AppCoordinator {
             signOutUseCase: signOutUseCase,
             fetchMoteSizeUseCase: fetchMoteSizeUseCase,
             fetchGravityOptionUseCase: fetchGravityOptionUseCase,
+            fetchBounceOptionUseCase: fetchBounceOptionUseCase,
             fetchAppearanceThemeUseCase: fetchAppearanceThemeUseCase,
             updateAppearanceThemeUseCase: updateAppearanceThemeUseCase,
             firestore: Firestore.firestore(),

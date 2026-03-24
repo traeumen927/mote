@@ -35,6 +35,9 @@ final class DriftScene: SKScene {
     /// 중력 프리셋
     private var gravityOption: GravityOption = .default
     
+    /// 바운스 프리셋
+    private var bounceOption: BounceOption = .default
+    
     /// 마지막으로 반영한 감정 목록. 설정 변경 시 현재 목록으로 재시작하기 위해 보관.
     private var currentEmotions: [EmotionRecord] = []
     
@@ -117,6 +120,13 @@ final class DriftScene: SKScene {
         
         self.gravityOption = gravityOption
         self.physicsWorld.gravity = gravityOption.gravityVector
+        self.restartWithCurrentEmotions()
+    }
+    
+    func applyBounceOption(_ bounceOption: BounceOption) {
+        guard self.bounceOption != bounceOption else { return }
+        
+        self.bounceOption = bounceOption
         self.restartWithCurrentEmotions()
     }
     
@@ -269,7 +279,7 @@ final class DriftScene: SKScene {
     private func makeMotePhysicsBody(radius: CGFloat) -> SKPhysicsBody {
         let body = SKPhysicsBody(circleOfRadius: radius)
         body.allowsRotation = true
-        body.restitution = 0.22
+        body.restitution = self.bounceOption.restitution
         body.friction = 0.7
         body.angularDamping = 0.9
         body.linearDamping = 0.55

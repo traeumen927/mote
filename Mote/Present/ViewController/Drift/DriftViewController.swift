@@ -86,6 +86,13 @@ final class DriftViewController: UIViewController {
             })
             .disposed(by: self.disposeBag)
         
+        self.viewModel.bounceOption
+            .asDriver()
+            .drive(onNext: { [weak self] bounceOption in
+                self?.driftScene.applyBounceOption(bounceOption)
+            })
+            .disposed(by: self.disposeBag)
+        
         self.viewModel.recentEmotions
             .map { Array($0.prefix(30)) }
             .asDriver(onErrorJustReturn: [])

@@ -12,6 +12,7 @@ enum PreferenceKey: String {
     case size
     case theme
     case gravity
+    case bounce
     
     func userDefaultsKey(for uid: String) -> String {
         "mote.preferences.\(self.rawValue).\(uid)"

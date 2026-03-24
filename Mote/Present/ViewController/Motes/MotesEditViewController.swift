@@ -18,7 +18,7 @@ final class MotesEditViewController: UIViewController {
     private enum Row: Int, CaseIterable {
         case size
         case gravity
-        case appearance3
+        case bounce
         
         var title: String {
             switch self {
@@ -26,8 +26,8 @@ final class MotesEditViewController: UIViewController {
                 return "Size"
             case .gravity:
                 return "Gravity"
-            case .appearance3:
-                return "appearance3"
+            case .bounce:
+                return "Bounce"
             }
         }
     }
@@ -45,6 +45,7 @@ final class MotesEditViewController: UIViewController {
     
     private lazy var sizeMenuInteraction = UIEditMenuInteraction(delegate: self)
     private lazy var gravityMenuInteraction = UIEditMenuInteraction(delegate: self)
+    private lazy var bounceMenuInteraction = UIEditMenuInteraction(delegate: self)
     private var activeMenuRow: Row?
     
     init(viewModel: MotesViewModel) {
@@ -69,6 +70,7 @@ final class MotesEditViewController: UIViewController {
         self.view.addSubview(self.tableView)
         self.tableView.addInteraction(self.sizeMenuInteraction)
         self.tableView.addInteraction(self.gravityMenuInteraction)
+        self.tableView.addInteraction(self.bounceMenuInteraction)
         
         self.tableView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
@@ -89,6 +91,14 @@ final class MotesEditViewController: UIViewController {
             .observe(on: MainScheduler.instance)
             .bind { [weak self] _ in
                 self?.reloadRow(.gravity)
+            }
+            .disposed(by: self.disposeBag)
+        
+        self.viewModel.bounceOption
+            .distinctUntilChanged()
+            .observe(on: MainScheduler.instance)
+            .bind { [weak self] _ in
+                self?.reloadRow(.bounce)
             }
             .disposed(by: self.disposeBag)
     }
@@ -134,6 +144,19 @@ final class MotesEditViewController: UIViewController {
         return UIMenu(title: "Gravity", options: .singleSelection, children: actions)
     }
     
+    private func bounceMenu() -> UIMenu {
+        let actions = BounceOption.allCases.map { bounceOption in
+            UIAction(
+                title: bounceOption.title,
+                state: bounceOption == self.viewModel.bounceOption.value ? .on : .off
+            ) { [weak self] _ in
+                self?.viewModel.updateBounceOption(bounceOption)
+            }
+        }
+        
+        return UIMenu(title: "Bounce", options: .singleSelection, children: actions)
+    }
+    
     private func presentMenu(at indexPath: IndexPath, for row: Row) {
         let cellRect = self.tableView.rectForRow(at: indexPath)
         let sourcePoint = CGPoint(x: cellRect.maxX, y: cellRect.midY)
@@ -145,8 +168,8 @@ final class MotesEditViewController: UIViewController {
             self.sizeMenuInteraction.presentEditMenu(with: configuration)
         case .gravity:
             self.gravityMenuInteraction.presentEditMenu(with: configuration)
-        case .appearance3:
-            break
+        case .bounce:
+            self.bounceMenuInteraction.presentEditMenu(with: configuration)
         }
     }
 }
@@ -188,8 +211,8 @@ extension MotesEditViewController: UITableViewDataSource {
             cell.detailTextLabel?.text = self.viewModel.moteSizeOption.value.title
         case .gravity:
             cell.detailTextLabel?.text = self.viewModel.gravityOption.value.title
-        case .appearance3:
-            break
+        case .bounce:
+            cell.detailTextLabel?.text = self.viewModel.bounceOption.value.title
         }
         
         return cell
@@ -204,10 +227,8 @@ extension MotesEditViewController: UITableViewDelegate {
         guard let row = Row(rawValue: indexPath.row) else { return }
         
         switch row {
-        case .size, .gravity:
+        case .size, .gravity, .bounce:
             self.presentMenu(at: indexPath, for: row)
-        case .appearance3:
-            break
         }
     }
 }
@@ -224,7 +245,9 @@ extension MotesEditViewController: UIEditMenuInteractionDelegate {
             return self.sizeMenu()
         case .gravity:
             return self.gravityMenu()
-        case .appearance3, .none:
+        case .bounce:
+            return self.bounceMenu()
+        case .none:
             return nil
         }
     }
