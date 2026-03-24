@@ -280,9 +280,9 @@ final class DriftScene: SKScene {
         let body = SKPhysicsBody(circleOfRadius: radius)
         body.allowsRotation = true
         body.restitution = self.bounceOption.restitution
-        body.friction = 0.7
-        body.angularDamping = 0.9
-        body.linearDamping = 0.55
+        body.friction = self.bounceOption.friction
+        body.angularDamping = self.bounceOption.angularDamping
+        body.linearDamping = self.bounceOption.linearDamping
         body.mass = 0.12
         body.affectedByGravity = true
         
