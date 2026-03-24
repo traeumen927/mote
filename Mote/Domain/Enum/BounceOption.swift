@@ -29,11 +29,11 @@ enum BounceOption: String, CaseIterable {
     var restitution: CGFloat {
         switch self {
         case .calm:
-            return 0.16
+            return 0.25
         case .soft:
-            return 0.34
+            return 0.45
         case .lively:
-            return 0.8
+            return 0.7
         }
     }
     
@@ -43,7 +43,7 @@ enum BounceOption: String, CaseIterable {
         case .calm:
             return 0.88
         case .soft:
-            return 0.6
+            return 0.55
         case .lively:
             return 0.3
         }
@@ -53,9 +53,9 @@ enum BounceOption: String, CaseIterable {
     var linearDamping: CGFloat {
         switch self {
         case .calm:
-            return 0.9
+            return 0.70
         case .soft:
-            return 0.54
+            return 0.45
         case .lively:
             return 0.22
         }
@@ -65,11 +65,11 @@ enum BounceOption: String, CaseIterable {
     var angularDamping: CGFloat {
         switch self {
         case .calm:
-            return 1.15
-        case .soft:
             return 0.85
+        case .soft:
+            return 0.6
         case .lively:
-            return 0.3
+            return 0.4
         }
     }
 }
