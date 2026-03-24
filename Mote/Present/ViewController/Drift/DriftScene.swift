@@ -29,6 +29,12 @@ final class DriftScene: SKScene {
     /// 스폰 시 겹침 방지를 위한 최소 간격 여유치.
     private let spawnSeparationPadding: CGFloat = 2
     
+    /// mote 외곽선 두께.
+    private let moteStrokeLineWidth: CGFloat = 1
+    
+    /// 이모지 문자열별 반지름 측정 캐시.
+    private var radiusByEmotionCache: [String: CGFloat] = [:]
+    
     /// mote 사이즈
     private var moteSizeOption: MoteSizeOption = .default
     
@@ -112,6 +118,7 @@ final class DriftScene: SKScene {
         guard self.moteSizeOption != sizeOption else { return }
         
         self.moteSizeOption = sizeOption
+        self.radiusByEmotionCache.removeAll(keepingCapacity: true)
         self.restartWithCurrentEmotions()
     }
     
@@ -168,7 +175,7 @@ final class DriftScene: SKScene {
         let node = SKShapeNode(circleOfRadius: nodeRadius)
         node.fillColor = .black.withAlphaComponent(0.28)
         node.strokeColor = .white.withAlphaComponent(0.2)
-        node.lineWidth = 1
+        node.lineWidth = self.moteStrokeLineWidth
         node.zPosition = 1
         
         let labelNode = self.makeLabelNode(text: record.emotion)
@@ -282,11 +289,19 @@ final class DriftScene: SKScene {
     }
     
     private func moteRadius(for emotion: String) -> CGFloat {
-        let labelNode = self.makeLabelNode(text: emotion)
-        let contentRadius = max(labelNode.frame.width, labelNode.frame.height) * 0.62
-        let minimumRadius = self.moteSizeOption.fontSize * 0.92
+        if let cachedRadius = self.radiusByEmotionCache[emotion] {
+            return cachedRadius
+        }
         
-        return max(contentRadius, minimumRadius)
+        let labelNode = self.makeLabelNode(text: emotion)
+        let measuredFrame = labelNode.calculateAccumulatedFrame()
+        let contentDiameter = ceil(max(measuredFrame.width, measuredFrame.height))
+        
+        // 라벨을 가능한 꽉 채우되, 외곽선 절반 두께만큼만 반경에 반영한다.
+        let radius = (contentDiameter * 0.5) + (self.moteStrokeLineWidth * 0.5)
+        self.radiusByEmotionCache[emotion] = radius
+        
+        return radius
     }
     
     private func makeMotePhysicsBody(radius: CGFloat) -> SKPhysicsBody {
