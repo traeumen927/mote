@@ -11,6 +11,7 @@ import FirebaseFirestore
 struct EmotionRecordDTO {
     let emotion: String
     let caption: String
+    let isHidden: Bool
     let dateKey: String
     let yearMonth: String
     let day: Int
@@ -21,6 +22,7 @@ struct EmotionRecordDTO {
         self.emotion = data["emotion"] as? String ?? ""
 
         self.caption = data["caption"] as? String ?? ""
+        self.isHidden = data["isHidden"] as? Bool ?? false
 
         self.dateKey = dateKey
         self.yearMonth = data["yearMonth"] as? String ?? ""
@@ -34,6 +36,7 @@ struct EmotionRecordDTO {
         EmotionRecord(
             emotion: self.emotion,
             caption: self.caption,
+            isHidden: self.isHidden,
             dateKey: self.dateKey,
             yearMonth: self.yearMonth,
             day: self.day,

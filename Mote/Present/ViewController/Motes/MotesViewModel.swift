@@ -61,6 +61,7 @@ final class MotesViewModel {
             return EmotionRecord(
                 emotion: emotion,
                 caption: "",
+                isHidden: false,
                 dateKey: "motes-random-\(index)",
                 yearMonth: "",
                 day: 0,

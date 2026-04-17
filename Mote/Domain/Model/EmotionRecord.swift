@@ -10,6 +10,7 @@ import Foundation
 struct EmotionRecord {
     let emotion: String
     let caption: String
+    let isHidden: Bool
     let dateKey: String
     let yearMonth: String
     let day: Int

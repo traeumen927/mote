@@ -66,6 +66,7 @@ final class EmotionRepositoryImpl: EmotionRepository {
                 "emotion": request.emotion,
                 "yearMonth": request.yearMonth,
                 "day": request.day,
+                "isHidden": request.isHidden,
                 "updatedAt": FieldValue.serverTimestamp()
             ]
             

@@ -37,7 +37,8 @@ final class FetchRecentEmotionsUseCase {
         ) { result in
             switch result {
             case .success(let emotionRecords):
-                completion(.success(emotionRecords))
+                let visibleEmotionRecords = emotionRecords.filter { $0.isHidden == false }
+                completion(.success(visibleEmotionRecords))
             case .failure(let error):
                 completion(.failure(error))
             }
