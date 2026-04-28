@@ -44,7 +44,7 @@ final class HistoryViewController: UIViewController {
     private lazy var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ko_KR")
-        formatter.dateFormat = "yyyy.MM.dd HH:mm"
+        formatter.dateFormat = "yyyy.MM.dd"
         return formatter
     }()
     
@@ -124,12 +124,8 @@ final class HistoryViewController: UIViewController {
             cell.configure(
                 emotion: item.emotion,
                 caption: item.caption,
-                isHidden: item.isHidden,
                 createdAtText: createdAtText
             )
-            cell.onHiddenSwitchChanged = { [weak self] isOn in
-                self?.viewModel.updateHidden(dateKey: item.dateKey, isHidden: isOn)
-            }
             
             return cell
         }
