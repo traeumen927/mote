@@ -20,13 +20,14 @@ final class SpaceViewController: UIViewController {
     private enum Row {
         case profile
         case motes
+        case history
         case appearance
         case logout
     }
     
     private let sections: [[Row]] = [
         [.profile],
-        [.motes, .appearance],
+        [.motes, .history, .appearance],
         [.logout]
     ]
     
@@ -210,6 +211,10 @@ extension SpaceViewController: UITableViewDataSource {
                 cell.textLabel?.text = "Motes"
                 cell.accessoryType = .disclosureIndicator
                 
+            case .history:
+                cell.textLabel?.text = "History"
+                cell.accessoryType = .disclosureIndicator
+                
             case .appearance:
                 cell.textLabel?.text = "Appearance"
                 cell.detailTextLabel?.text = self.viewModel.appearanceTheme.value.title
@@ -237,6 +242,9 @@ extension SpaceViewController: UITableViewDelegate {
             
         case .motes:
             self.coordinator?.showMotes()
+            
+        case .history:
+            self.coordinator?.showHistory()
             
         case .appearance:
             self.presentAppearanceMenu(at: indexPath)

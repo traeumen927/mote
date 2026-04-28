@@ -10,6 +10,7 @@ import UIKit
 protocol SpaceCoordinating: AnyObject {
     func showProfile()
     func showMotes()
+    func showHistory()
     func applyAppearanceTheme(_ theme: AppearanceThemeOption)
 }
 
@@ -59,6 +60,12 @@ final class SpaceCoordinator: SpaceCoordinating {
         
         motesViewController.hidesBottomBarWhenPushed = true
         self.navigationController?.pushViewController(motesViewController, animated: true)
+    }
+    
+    func showHistory() {
+        let historyViewController = HistoryViewController(viewModel: HistoryViewModel())
+        historyViewController.hidesBottomBarWhenPushed = true
+        self.navigationController?.pushViewController(historyViewController, animated: true)
     }
     
     func applyAppearanceTheme(_ theme: AppearanceThemeOption) {
