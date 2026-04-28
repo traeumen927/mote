@@ -24,7 +24,11 @@ final class FetchRecentEmotionsUseCase {
         self.uidProvider = uidProvider
     }
     
-    func execute(limit: Int, completion: @escaping (Result<[EmotionRecord], Error>) -> Void) {
+    func execute(
+        limit: Int,
+        includeHidden: Bool = false,
+        completion: @escaping (Result<[EmotionRecord], Error>) -> Void
+    ) {
         guard let uid = self.uidProvider.currentUID else {
             completion(.failure(FetchRecentEmotionsError.unauthenticated))
             return
@@ -37,8 +41,12 @@ final class FetchRecentEmotionsUseCase {
         ) { result in
             switch result {
             case .success(let emotionRecords):
-                let visibleEmotionRecords = emotionRecords.filter { $0.isHidden == false }
-                completion(.success(visibleEmotionRecords))
+                if includeHidden {
+                    completion(.success(emotionRecords))
+                } else {
+                    let visibleEmotionRecords = emotionRecords.filter { $0.isHidden == false }
+                    completion(.success(visibleEmotionRecords))
+                }
             case .failure(let error):
                 completion(.failure(error))
             }

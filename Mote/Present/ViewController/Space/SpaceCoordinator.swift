@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import FirebaseFirestore
 
 protocol SpaceCoordinating: AnyObject {
     func showProfile()
@@ -63,7 +64,14 @@ final class SpaceCoordinator: SpaceCoordinating {
     }
     
     func showHistory() {
-        let historyViewController = HistoryViewController(viewModel: HistoryViewModel())
+        let emotionRepository = EmotionRepositoryImpl(firestore: .firestore())
+        let fetchRecentEmotionsUseCase = FetchRecentEmotionsUseCase(todayEmotionRepository: emotionRepository)
+        let historyViewController = HistoryViewController(
+            viewModel: HistoryViewModel(
+                fetchRecentEmotionsUseCase: fetchRecentEmotionsUseCase,
+                emotionRepository: emotionRepository
+            )
+        )
         historyViewController.hidesBottomBarWhenPushed = true
         self.navigationController?.pushViewController(historyViewController, animated: true)
     }
