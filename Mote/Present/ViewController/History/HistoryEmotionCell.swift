@@ -10,6 +10,7 @@ import SnapKit
 
 final class HistoryEmotionCell: UITableViewCell {
     static let reuseIdentifier = "HistoryEmotionCell"
+    static let rowHeight: CGFloat = 76
     
     private let emotionLabel = UILabel()
     private let captionLabel = UILabel()
@@ -40,29 +41,40 @@ final class HistoryEmotionCell: UITableViewCell {
         
         self.emotionLabel.font = Typography.largeTitle
         self.emotionLabel.textColor = SemanticColor.textPrimary.uiColor
+        self.emotionLabel.setContentHuggingPriority(.required, for: .horizontal)
+        self.emotionLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
         
         self.captionLabel.font = Typography.body
         self.captionLabel.textColor = SemanticColor.textSecondary.uiColor
-        self.captionLabel.numberOfLines = 0
+        self.captionLabel.numberOfLines = 2
+        self.captionLabel.lineBreakMode = .byTruncatingTail
+        self.captionLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        self.captionLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         
         self.createdAtLabel.font = Typography.bodySmall
         self.createdAtLabel.textColor = SemanticColor.textSecondary.uiColor
         self.createdAtLabel.textAlignment = .right
+        self.createdAtLabel.setContentHuggingPriority(.required, for: .horizontal)
+        self.createdAtLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
         
-        let topStack = UIStackView(arrangedSubviews: [self.emotionLabel, self.createdAtLabel])
-        topStack.axis = .horizontal
-        topStack.alignment = .top
-        topStack.distribution = .fill
-        topStack.spacing = 8
+        self.contentView.addSubview(self.emotionLabel)
+        self.contentView.addSubview(self.captionLabel)
+        self.contentView.addSubview(self.createdAtLabel)
         
-        let stack = UIStackView(arrangedSubviews: [topStack, self.captionLabel])
-        stack.axis = .vertical
-        stack.spacing = 8
+        self.emotionLabel.snp.makeConstraints { make in
+            make.leading.equalToSuperview().inset(16)
+            make.centerY.equalToSuperview()
+        }
         
-        self.contentView.addSubview(stack)
-        stack.snp.makeConstraints { make in
-            make.top.bottom.equalToSuperview().inset(10)
-            make.leading.trailing.equalToSuperview().inset(16)
+        self.createdAtLabel.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().inset(16)
+            make.centerY.equalToSuperview()
+        }
+        
+        self.captionLabel.snp.makeConstraints { make in
+            make.leading.equalTo(self.emotionLabel.snp.trailing).offset(12)
+            make.trailing.lessThanOrEqualTo(self.createdAtLabel.snp.leading).offset(-12)
+            make.top.bottom.equalToSuperview().inset(12)
         }
     }
 }

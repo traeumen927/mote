@@ -17,8 +17,8 @@ final class HistoryViewController: UIViewController {
         let tableView = UITableView(frame: .zero, style: .insetGrouped)
         tableView.backgroundColor = .clear
         tableView.delegate = self
-        tableView.rowHeight = UITableView.automaticDimension
-        tableView.estimatedRowHeight = 130
+        tableView.rowHeight = HistoryEmotionCell.rowHeight
+        tableView.estimatedRowHeight = HistoryEmotionCell.rowHeight
         tableView.register(HistoryEmotionCell.self, forCellReuseIdentifier: HistoryEmotionCell.reuseIdentifier)
         return tableView
     }()
